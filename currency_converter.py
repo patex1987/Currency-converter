@@ -4,6 +4,8 @@ Created on 27. 11. 2017
 @author: patex1987
 '''
 
+import requests
+
 
 class CurrencyConverter(object):
     '''
@@ -14,9 +16,10 @@ class CurrencyConverter(object):
         '''
         Constructor
         '''
-        self.actual_rates = self._get_actual_rates()
-        self.symbols_map = self._get_symbols_map()
+        self.api_base_url = 'https://api.fixer.io'
         self.available_currencies = self._get_available_currencies()
+        self.actual_rates = self._get_actual_rates()
+        #self.symbols_map = self._get_symbols_map()
 
     def convert(self,
                 input_amount,
@@ -24,8 +27,9 @@ class CurrencyConverter(object):
                 output_currency=None):
         '''
         converts the input amount into a structured output
-        output curency can be a single currency or all available currencies
+        output currency can be a single currency or all available currencies
         '''
+        self._check_rates_actuality()
         output_currencies = self._get_current_outputs(input_currency,
                                                       output_currency)
         output_amounts = self._get_all_conversions(input_amount,
@@ -33,15 +37,14 @@ class CurrencyConverter(object):
                                                    output_currencies)
         return output_amounts
 
-    def convert_single_currency(self,
-                                input_amount,
-                                input_currency,
-                                output_currency):
+    def _convert_single_currency(self,
+                                 input_amount,
+                                 input_currency,
+                                 output_currency):
         '''
         Converts the provided input amount of money into the desired output
         amount
         '''
-        self._check_rates_actuality()
         actual_conversion_rate = self._calculate_current_rate(input_currency,
                                                               output_currency)
         output_amount = self._calculate_output_amount(input_amount,
@@ -52,6 +55,10 @@ class CurrencyConverter(object):
         '''
         Retrieves the actual currency conversion rates from fixer.io
         '''
+        actual_rates = {}
+        actual_rates['last_update'] = None
+        actual_rates['rates'] = {}
+        return actual_rates
 
     def _get_symbols_map(self):
         '''
@@ -62,6 +69,11 @@ class CurrencyConverter(object):
         '''
         returns a list of available ouput currencies
         '''
+        latest_url = self.api_base_url + '/latest'
+        fixer_response = requests.get(latest_url).json()
+        available_currencies = ([fixer_response['base']] +
+                                list(fixer_response['rates'].keys()))
+        return available_currencies
 
     def _get_current_outputs(self, input_currency, output_currency):
         '''
@@ -69,12 +81,17 @@ class CurrencyConverter(object):
         currency
         '''
 
-    def _get_all_conversions(input_amount, input_currency, output_currencies)
+    def _get_all_conversions(self,
+                             input_amount,
+                             input_currency,
+                             output_currencies):
         output_conversions = {}
+        if not output_currencies:
+            return {}
         for currency in output_currencies:
-            output_amount = self.convert_single_currency(input_amount,
-                                                         input_currency,
-                                                         currency)
+            output_amount = self._convert_single_currency(input_amount,
+                                                          input_currency,
+                                                          currency)
             output_conversions[currency] = output_amount
         return output_conversions
 
@@ -94,5 +111,3 @@ class CurrencyConverter(object):
         '''
         Returns the output amount
         '''
-
-
