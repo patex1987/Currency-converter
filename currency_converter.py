@@ -31,16 +31,7 @@ class CurrencyConverter(object):
         output_amounts = self._get_all_conversions(input_amount,
                                                    input_currency,
                                                    output_currencies)
-        return output_amounts   
-
-    def _get_all_conversions(input_amount, input_currency, output_currencies)
-        output_conversions = {}
-        for currency in output_currencies:
-            output_amount = self.convert_single_currency(input_amount,
-                                                         input_currency,
-                                                         currency)
-            output_conversions[currency] = output_amount
-        return output_conversions
+        return output_amounts
 
     def convert_single_currency(self,
                                 input_amount,
@@ -77,6 +68,15 @@ class CurrencyConverter(object):
         returns a list of possible output currencies for the selected input
         currency
         '''
+
+    def _get_all_conversions(input_amount, input_currency, output_currencies)
+        output_conversions = {}
+        for currency in output_currencies:
+            output_amount = self.convert_single_currency(input_amount,
+                                                         input_currency,
+                                                         currency)
+            output_conversions[currency] = output_amount
+        return output_conversions
 
     def _check_rates_actuality(self):
         '''
