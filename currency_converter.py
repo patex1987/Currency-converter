@@ -58,6 +58,7 @@ class CurrencyConverter(object):
     def _get_actual_rates(self):
         '''
         Retrieves the actual currency conversion rates from fixer.io
+        TODO: Calculate conversion for other currencies based on the base currency
         '''
         actual_rates = {}
         actual_rates['last_update'] = None
