@@ -4,7 +4,10 @@ Created on 27. 11. 2017
 @author: patex1987
 '''
 
+import currency_exceptions as exceptions
 import requests
+import currency_exceptions
+import datetime as dt
 
 
 class CurrencyConverter(object):
@@ -17,7 +20,8 @@ class CurrencyConverter(object):
         Constructor
         '''
         self.api_base_url = 'https://api.fixer.io'
-        self.available_currencies = self._get_available_currencies()
+        self.base_currency = 'EUR'
+        self.available_currencies = None
         self.actual_rates = self._get_actual_rates()
         #self.symbols_map = self._get_symbols_map()
 
@@ -58,22 +62,24 @@ class CurrencyConverter(object):
         actual_rates = {}
         actual_rates['last_update'] = None
         actual_rates['rates'] = {}
-        return actual_rates
+        act_currency = self.base_currency
+        try:
+            act_rates = self._get_rates_for_base(act_currency)
+            actual_rates['rates'][act_currency] = act_rates
+            actual_rates['last_update'] = dt.datetime.now()
+            self.available_currencies = [self.base_currency] + list(act_rates.keys())
+            return actual_rates
+        except currency_exceptions.FixerError:
+            pass
+        if not hasattr(self, 'actual_rates'):
+            return actual_rates
+        if actual_rates['last_update'] is None:
+            return self.actual_rates
 
     def _get_symbols_map(self):
         '''
         gets currency symbols mapping
         '''
-
-    def _get_available_currencies(self):
-        '''
-        returns a list of available ouput currencies
-        '''
-        latest_url = self.api_base_url + '/latest'
-        fixer_response = requests.get(latest_url).json()
-        available_currencies = ([fixer_response['base']] +
-                                list(fixer_response['rates'].keys()))
-        return available_currencies
 
     def _get_current_outputs(self, input_currency, output_currency):
         '''
@@ -111,3 +117,21 @@ class CurrencyConverter(object):
         '''
         Returns the output amount
         '''
+
+    def _get_rates_for_base(self, base_currency):
+        '''
+        returns conversion rates for the provided base
+        '''
+        currency_url = '{0}/{1}?base={2}'.format(self.api_base_url,
+                                                 'latest',
+                                                 base_currency)
+        fixer_response = requests.get(currency_url)
+        if fixer_response.headers['content-type'] == 'text/html':
+            raise exceptions.FixerError
+        current_rates = fixer_response.json()['rates']
+        return current_rates
+
+if __name__ == '__main__':
+    a = CurrencyConverter()
+    for i in range(100):
+        print(a._get_actual_rates()['last_update'])
