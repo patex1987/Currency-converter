@@ -57,5 +57,6 @@ def test_symbols_presence_wo_symbols(converter_without_symbols):
 def test_symbols_wrong_sep(converter):
     '''
     Tests converter for improper symbol separator
+    TODO: check for length after splitting a row (It always should be 2)
     '''
     assert converter._get_symbols_map('txt\symbols.txt', ';')
