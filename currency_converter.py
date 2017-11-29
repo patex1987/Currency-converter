@@ -89,6 +89,8 @@ class CurrencyConverter(object):
                 if len(data) != 2:
                     raise exceptions.SymbolImportError
                 symbol_encoded = bytes(data[0], encoding='utf-8')
+                if len(data[1]) != 3:
+                    raise exceptions.SymbolImportError
                 currency = data[1]
                 symbol_map[symbol_encoded].append(currency)
         return symbol_map
@@ -145,5 +147,4 @@ class CurrencyConverter(object):
 
 if __name__ == '__main__':
     a = CurrencyConverter()
-    for i in range(100):
-        print(list(a.actual_rates['rates'].keys()), a.available_currencies)
+    print(list(a.symbols_map.values()))
