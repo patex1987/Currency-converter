@@ -6,6 +6,7 @@ Created on 28. 11. 2017
 import pytest
 import currency_converter
 import currency_exceptions
+from locale import currency
 
 
 @pytest.fixture
@@ -13,7 +14,7 @@ def converter():
     '''
     Returns a CurrencyConverter object
     '''
-    return currency_converter.CurrencyConverter(symbols_file='txt\symbols.txt')
+    return currency_converter.CurrencyConverter(symbols_file=r'txt\symbols.txt')
 
 
 @pytest.fixture
@@ -41,6 +42,16 @@ def test_base_rate(converter):
     assert currency_codes == [converter.base_currency]
 
 
+# def test_limit_reached(converter):
+#     '''
+#     Tests if the CurrencyConverter raises an exception if
+#     fixer.io reaches request limit
+#     '''
+#     with pytest.raises(currency_exceptions.FixerError):
+#         for _ in range(100):
+#             converter._get_rates_for_base(converter.base_currency)
+
+
 def test_symbols_presence(converter):
     '''
     Tests if symbols are added to the class
@@ -54,9 +65,10 @@ def test_symbols_presence_wo_symbols(converter_without_symbols):
     '''
     assert converter_without_symbols.symbols_map is None
 
+
 def test_symbols_wrong_sep(converter):
     '''
     Tests converter for improper symbol separator
-    TODO: check for length after splitting a row (It always should be 2)
     '''
-    assert converter._get_symbols_map('txt\symbols.txt', ';')
+    with pytest.raises(currency_exceptions.SymbolImportError):
+        converter._get_symbols_map(r'txt\symbols.txt', ';')
