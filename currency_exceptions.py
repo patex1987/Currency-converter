@@ -18,3 +18,10 @@ class SymbolImportError(Exception):
     map importing
     '''
     pass
+
+
+class ConversionError(Exception):
+    '''
+    Exception, if conversion can't be done
+    '''
+    pass
