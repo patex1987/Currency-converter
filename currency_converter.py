@@ -8,6 +8,7 @@ import currency_exceptions as exceptions
 import requests
 import currency_exceptions
 import datetime as dt
+from collections import defaultdict
 
 
 class CurrencyConverter(object):
@@ -15,7 +16,7 @@ class CurrencyConverter(object):
     This class handles all the currency conversion related operations
     '''
 
-    def __init__(self):
+    def __init__(self, symbols_file=None, symbols_sep='\t'):
         '''
         Constructor
         '''
@@ -23,7 +24,9 @@ class CurrencyConverter(object):
         self.base_currency = 'EUR'
         self.available_currencies = None
         self.actual_rates = self._get_actual_rates()
-        #self.symbols_map = self._get_symbols_map()
+        self.symbols_map = None
+        if symbols_file is not None:
+            self.symbols_map = self._get_symbols_map(symbols_file, symbols_sep)
 
     def convert(self,
                 input_amount,
@@ -76,10 +79,18 @@ class CurrencyConverter(object):
         if actual_rates['last_update'] is None:
             return self.actual_rates
 
-    def _get_symbols_map(self):
+    def _get_symbols_map(self, file_name, separator):
         '''
         gets currency symbols mapping
         '''
+        symbol_map = defaultdict(list)
+        with open(file_name) as input_file:
+            for line in input_file:
+                data = line.strip().split(separator)
+                symbol_encoded = bytes(data[0], encoding='utf-8')
+                currency = data[1]
+                symbol_map[symbol_encoded].append(currency)
+        return symbol_map
 
     def _get_current_outputs(self, input_currency, output_currency):
         '''
