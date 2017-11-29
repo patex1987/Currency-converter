@@ -24,16 +24,15 @@ def test_default_available_currencies(converter):
     assert len(converter.available_currencies) > 0
 
 
-def test_default_rates(converter):
+def test_base_rate(converter):
     '''
     Tests the structure of actual rates
     '''
     assert 'last_update' in converter.actual_rates.keys()
     assert 'rates' in converter.actual_rates.keys()
     currency_codes = list(converter.actual_rates['rates'].keys())
-    assert currency_codes
-    print(currency_codes)
-    assert all((len(code) == 3 for code in currency_codes)) is True
+    assert currency_codes == [converter.base_currency]
+
 
 def test_limit_reached(converter):
     '''
@@ -42,4 +41,4 @@ def test_limit_reached(converter):
     '''
     with pytest.raises(currency_exceptions.FixerError) as err_inf:
         for _ in range(100):
-            converter._get_rates_for_base('EUR')
+            converter._get_actual_rates()
