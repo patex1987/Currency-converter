@@ -13,6 +13,14 @@ def converter():
     '''
     Returns a CurrencyConverter object
     '''
+    return currency_converter.CurrencyConverter(symbols_file='txt\symbols.txt')
+
+
+@pytest.fixture
+def converter_without_symbols():
+    '''
+    Returns a CurrencyConverter object
+    '''
     return currency_converter.CurrencyConverter()
 
 
@@ -31,3 +39,23 @@ def test_base_rate(converter):
     assert 'rates' in converter.actual_rates.keys()
     currency_codes = list(converter.actual_rates['rates'].keys())
     assert currency_codes == [converter.base_currency]
+
+
+def test_symbols_presence(converter):
+    '''
+    Tests if symbols are added to the class
+    '''
+    assert converter.symbols_map is not None
+
+
+def test_symbols_presence_wo_symbols(converter_without_symbols):
+    '''
+    Tests symbols in a converter without symbols
+    '''
+    assert converter_without_symbols.symbols_map is None
+
+def test_symbols_wrong_sep(converter):
+    '''
+    Tests converter for improper symbol separator
+    '''
+    assert converter._get_symbols_map('txt\symbols.txt', ';')
