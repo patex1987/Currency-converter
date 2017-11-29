@@ -14,7 +14,7 @@ def converter():
     '''
     Returns a CurrencyConverter object
     '''
-    return currency_converter.CurrencyConverter(symbols_file=r'txt\symbols.txt')
+    return currency_converter.CurrencyConverter()
 
 
 @pytest.fixture
@@ -22,7 +22,7 @@ def converter_without_symbols():
     '''
     Returns a CurrencyConverter object
     '''
-    return currency_converter.CurrencyConverter()
+    return currency_converter.CurrencyConverter(symbols_file=None)
 
 
 def test_default_available_currencies(converter):
@@ -72,3 +72,13 @@ def test_symbols_wrong_sep(converter):
     '''
     with pytest.raises(currency_exceptions.SymbolImportError):
         converter._get_symbols_map(r'txt\symbols.txt', ';')
+
+
+def test_symbols_map_values(converter):
+    '''
+    Tests if all values in the symbols map dictionary is 3 letter long
+    '''
+    symbol_values = list(converter.symbols_map.values())
+    currencies = [currency for sublist in symbol_values for currency in sublist]
+    currency_length_check = (len(currency) == 3 for currency in currencies)
+    assert all(currency_length_check)
