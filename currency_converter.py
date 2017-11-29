@@ -15,7 +15,7 @@ class CurrencyConverter(object):
     This class handles all the currency conversion related operations
     '''
 
-    def __init__(self, symbols_file=None, symbols_sep='\t'):
+    def __init__(self, symbols_file=r'txt\symbols.txt', symbols_sep='\t'):
         '''
         Constructor
         '''
