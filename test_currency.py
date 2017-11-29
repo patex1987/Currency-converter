@@ -21,7 +21,6 @@ def test_default_available_currencies(converter):
     Test of the structure, when a single element is inserted
     """
     assert converter.available_currencies is not None
-    assert len(converter.available_currencies) > 0
 
 
 def test_base_rate(converter):
