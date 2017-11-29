@@ -6,6 +6,7 @@ Created on 27. 11. 2017
 
 from collections import defaultdict
 import datetime as dt
+import numbers
 import requests
 import currency_exceptions as exceptions
 
@@ -35,13 +36,15 @@ class CurrencyConverter(object):
         converts the input amount into a structured output
         output currency can be a single currency or all available currencies
         '''
-        self._check_rates_actuality()
-        output_currencies = self._get_current_outputs(input_currency,
-                                                      output_currency)
-        output_amounts = self._get_all_conversions(input_amount,
-                                                   input_currency,
-                                                   output_currencies)
-        return output_amounts
+        if not isinstance(input_amount, numbers.Number):
+            raise exceptions.ConversionError
+#         self._check_rates_actuality()
+#         output_currencies = self._get_current_outputs(input_currency,
+#                                                       output_currency)
+#         output_amounts = self._get_all_conversions(input_amount,
+#                                                    input_currency,
+#                                                    output_currencies)
+#         return output_amounts
 
     def _convert_single_currency(self,
                                  input_amount,
@@ -146,5 +149,5 @@ class CurrencyConverter(object):
         return current_rates
 
 if __name__ == '__main__':
-    a = CurrencyConverter()
-    print(list(a.symbols_map.values()))
+    a = CurrencyConverter(None)
+    print(a.symbols_map)
