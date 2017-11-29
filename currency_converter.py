@@ -4,11 +4,10 @@ Created on 27. 11. 2017
 @author: patex1987
 '''
 
-import currency_exceptions as exceptions
-import requests
-import currency_exceptions
-import datetime as dt
 from collections import defaultdict
+import datetime as dt
+import requests
+import currency_exceptions as exceptions
 
 
 class CurrencyConverter(object):
@@ -72,7 +71,7 @@ class CurrencyConverter(object):
             actual_rates['last_update'] = dt.datetime.now()
             self.available_currencies = [self.base_currency] + list(act_rates.keys())
             return actual_rates
-        except currency_exceptions.FixerError:
+        except exceptions.FixerError:
             pass
         if not hasattr(self, 'actual_rates'):
             return actual_rates
@@ -87,6 +86,8 @@ class CurrencyConverter(object):
         with open(file_name) as input_file:
             for line in input_file:
                 data = line.strip().split(separator)
+                if len(data) != 2:
+                    raise exceptions.SymbolImportError
                 symbol_encoded = bytes(data[0], encoding='utf-8')
                 currency = data[1]
                 symbol_map[symbol_encoded].append(currency)
