@@ -88,4 +88,4 @@ def test_input_amount_number(converter):
     Tests if a string as input amount raises an error
     '''
     with pytest.raises(currency_exceptions.ConversionError):
-        assert converter.convert(input_amount='text', input_currency='EUR')
+        assert converter._check_conversion_input(input_amount='text', input_currency='EUR')

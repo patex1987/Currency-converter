@@ -36,8 +36,9 @@ class CurrencyConverter(object):
         converts the input amount into a structured output
         output currency can be a single currency or all available currencies
         '''
-        if not isinstance(input_amount, numbers.Number):
-            raise exceptions.ConversionError
+        self._check_conversion_input(input_amount,
+                                     input_currency,
+                                     output_currency)
 #         self._check_rates_actuality()
 #         output_currencies = self._get_current_outputs(input_currency,
 #                                                       output_currency)
@@ -147,6 +148,13 @@ class CurrencyConverter(object):
             raise exceptions.FixerError
         current_rates = fixer_response.json()['rates']
         return current_rates
+
+    def _check_conversion_input(self, input_amount, input_currency, output_currency=None):
+        '''
+        Checks whether the inversion 
+        '''
+        if not isinstance(input_amount, numbers.Number):
+            raise exceptions.ConversionError
 
 if __name__ == '__main__':
     a = CurrencyConverter(None)
