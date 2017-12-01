@@ -96,6 +96,8 @@ class CurrencyConverter(object):
                 symbol_encoded = bytes(data[0], encoding='utf-8')
                 if len(data[1]) != 3:
                     raise exceptions.SymbolImportError
+                if data[1] not in self.available_currencies:
+                    continue
                 currency = data[1]
                 symbol_map[symbol_encoded].append(currency)
         return symbol_map
@@ -152,12 +154,19 @@ class CurrencyConverter(object):
 
     def _check_input_currency(self, raw_input_currency):
         '''
+        Checks whether the input currency is in correct format and if its
+        contained in the available currencies or symbols. Returns 3 letter
+        currency codes (Converts symbol to currency) 
         '''
+        real_input_currency = raw_input_currency
         b_input_currency = bytes(raw_input_currency, encoding='utf-8')
-        if raw_input_currency in self.available_currencies:
-            return raw_input_currency
         if b_input_currency in self.symbols_map.keys():
-            return self.symbols_map[b_input_currency]
+            input_currencies = self.symbols_map[b_input_currency]
+            if len(input_currencies) != 1:
+                raise exceptions.TooMuchCurrencies
+            real_input_currency = input_currencies[0]
+        if real_input_currency in self.available_currencies:
+            return real_input_currency
         raise exceptions.CurrencyError
 
     def _check_output_currency(raw_output_currency):
@@ -175,4 +184,4 @@ class CurrencyConverter(object):
 
 if __name__ == '__main__':
     a = CurrencyConverter()
-    print(a._check_input_currency('₡'))
+    print(a._check_input_currency(raw_input_currency='$'))

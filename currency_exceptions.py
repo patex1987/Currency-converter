@@ -28,6 +28,12 @@ class ConversionError(Exception):
 
 class CurrencyError(Exception):
     '''
-    Exception trhown, if a wrong currency is provided
+    Exception thrown, if a wrong currency is provided
+    '''
+    pass
+
+class TooMuchCurrencies(Exception):
+    '''
+    Exception thrown, if too much currencies are mapped to the provided currency symbol
     '''
     pass

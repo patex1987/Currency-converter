@@ -91,6 +91,15 @@ def test_input_currency(converter):
     with pytest.raises(currency_exceptions.CurrencyError):
         assert converter._check_input_currency(raw_input_currency='££')
 
+def test_decoded_input_currency(converter):
+    '''
+    Tests the output of _check_input_currency
+    '''
+    with pytest.raises(currency_exceptions.TooMuchCurrencies):
+        assert converter._check_input_currency(raw_input_currency='$')
+    assert converter._check_input_currency(raw_input_currency='€') == 'EUR'
+    assert converter._check_input_currency(raw_input_currency='Kč') == 'CZK'
+
 def test_input_amount_number(converter):
     '''
     Tests if a string as input amount raises an error
