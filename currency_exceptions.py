@@ -25,3 +25,9 @@ class ConversionError(Exception):
     Exception, if conversion can't be done
     '''
     pass
+
+class CurrencyError(Exception):
+    '''
+    Exception trhown, if a wrong currency is provided
+    '''
+    pass

@@ -82,10 +82,18 @@ def test_symbols_map_values(converter):
     currency_length_check = (len(currency) == 3 for currency in currencies)
     assert all(currency_length_check)
 
+def test_input_currency(converter):
+    '''
+    Tests if a string as input amount raises an error
+    '''
+    with pytest.raises(currency_exceptions.CurrencyError):
+        assert converter._check_input_currency(raw_input_currency='blahblah')
+    with pytest.raises(currency_exceptions.CurrencyError):
+        assert converter._check_input_currency(raw_input_currency='££')
 
 def test_input_amount_number(converter):
     '''
     Tests if a string as input amount raises an error
     '''
     with pytest.raises(currency_exceptions.ConversionError):
-        assert converter._check_conversion_input(input_amount='text', input_currency='EUR')
+        assert converter._check_input_amount(input_amount='text')

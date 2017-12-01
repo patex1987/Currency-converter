@@ -9,6 +9,7 @@ import datetime as dt
 import numbers
 import requests
 import currency_exceptions as exceptions
+import io
 
 
 class CurrencyConverter(object):
@@ -30,15 +31,15 @@ class CurrencyConverter(object):
 
     def convert(self,
                 input_amount,
-                input_currency,
-                output_currency=None):
+                raw_input_currency,
+                raw_output_currency=None):
         '''
         converts the input amount into a structured output
         output currency can be a single currency or all available currencies
         '''
-        self._check_conversion_input(input_amount,
-                                     input_currency,
-                                     output_currency)
+        real_input_currency = self._check_input_currency(raw_input_currency)
+        real_output_currency = self._check_output_currency(raw_output_currency)
+        self._check_input_amount(input_amount)
 #         self._check_rates_actuality()
 #         output_currencies = self._get_current_outputs(input_currency,
 #                                                       output_currency)
@@ -87,7 +88,7 @@ class CurrencyConverter(object):
         gets currency symbols mapping
         '''
         symbol_map = defaultdict(list)
-        with open(file_name) as input_file:
+        with io.open(file_name, 'r', encoding='utf-8') as input_file:
             for line in input_file:
                 data = line.strip().split(separator)
                 if len(data) != 2:
@@ -149,13 +150,29 @@ class CurrencyConverter(object):
         current_rates = fixer_response.json()['rates']
         return current_rates
 
-    def _check_conversion_input(self, input_amount, input_currency, output_currency=None):
+    def _check_input_currency(self, raw_input_currency):
         '''
-        Checks whether the inversion 
+        '''
+        b_input_currency = bytes(raw_input_currency, encoding='utf-8')
+        if raw_input_currency in self.available_currencies:
+            return raw_input_currency
+        if b_input_currency in self.symbols_map.keys():
+            return self.symbols_map[b_input_currency]
+        raise exceptions.CurrencyError
+
+    def _check_output_currency(raw_output_currency):
+        '''
+        '''
+
+    def _check_input_amount(self, input_amount):
+        '''
+        Checks whether the conversion parameters are in correct format
         '''
         if not isinstance(input_amount, numbers.Number):
             raise exceptions.ConversionError
 
+
+
 if __name__ == '__main__':
-    a = CurrencyConverter(None)
-    print(a.symbols_map)
+    a = CurrencyConverter()
+    print(a._check_input_currency('₡'))
