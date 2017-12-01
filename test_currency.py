@@ -82,23 +82,49 @@ def test_symbols_map_values(converter):
     currency_length_check = (len(currency) == 3 for currency in currencies)
     assert all(currency_length_check)
 
-def test_input_currency(converter):
+def test_input_currency_wrong_inputs(converter):
     '''
-    Tests if a string as input amount raises an error
+    Tests if an improper input currency raises an Exception
     '''
     with pytest.raises(currency_exceptions.CurrencyError):
         assert converter._check_input_currency(raw_input_currency='blahblah')
     with pytest.raises(currency_exceptions.CurrencyError):
         assert converter._check_input_currency(raw_input_currency='££')
 
-def test_decoded_input_currency(converter):
+def test_input_currency_right_outputs(converter):
     '''
     Tests the output of _check_input_currency
     '''
     with pytest.raises(currency_exceptions.TooMuchCurrencies):
         assert converter._check_input_currency(raw_input_currency='$')
+    assert converter._check_input_currency(raw_input_currency='EUR') == 'EUR'
+    assert converter._check_input_currency(raw_input_currency='CZK') == 'CZK'
     assert converter._check_input_currency(raw_input_currency='€') == 'EUR'
     assert converter._check_input_currency(raw_input_currency='Kč') == 'CZK'
+
+def test_output_currencies_with_none(converter):
+    '''
+    tests if _check_output_currency returns the right list if None is provided
+    as output currency
+    '''
+    output_currencies = [currency for currency in converter.available_currencies if currency != 'EUR']
+    assert converter._check_output_currency('EUR', raw_output_currency=None) == output_currencies
+
+def test_output_currency_wrong_inputs(converter):
+    '''
+    Tests if an improper output currency raises an Exception
+    '''
+    with pytest.raises(currency_exceptions.CurrencyError):
+        assert converter._check_output_currency('EUR', raw_output_currency='blahblah')
+    with pytest.raises(currency_exceptions.CurrencyError):
+        assert converter._check_output_currency('EUR', raw_output_currency='££')
+
+def test_output_currency_right_outputs(converter):
+    '''
+    Tests the output of _check_output_currency
+    '''
+    assert converter._check_output_currency('EUR', raw_output_currency='CZK') == ['CZK']
+    assert converter._check_output_currency('CZK', raw_output_currency='EUR') == ['EUR']
 
 def test_input_amount_number(converter):
     '''

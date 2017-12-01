@@ -38,7 +38,7 @@ class CurrencyConverter(object):
         output currency can be a single currency or all available currencies
         '''
         real_input_currency = self._check_input_currency(raw_input_currency)
-        real_output_currency = self._check_output_currency(raw_output_currency)
+        real_output_currency = self._check_output_currency(real_input_currency, raw_output_currency)
         self._check_input_amount(input_amount)
 #         self._check_rates_actuality()
 #         output_currencies = self._get_current_outputs(input_currency,
@@ -169,9 +169,18 @@ class CurrencyConverter(object):
             return real_input_currency
         raise exceptions.CurrencyError
 
-    def _check_output_currency(raw_output_currency):
+    def _check_output_currency(self, real_input_currency, raw_output_currency):
         '''
+        Checks whether the input currency is in correct format and if it
+        exists. Returns a list of currency outputs
         '''
+        output_currencies = []
+        if raw_output_currency is None:
+            output_currencies = [currency for currency
+                                 in self.available_currencies
+                                 if currency!=real_input_currency]
+            return output_currencies
+        raise exceptions.CurrencyError
 
     def _check_input_amount(self, input_amount):
         '''
