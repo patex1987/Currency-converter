@@ -26,14 +26,17 @@ class ConversionError(Exception):
     '''
     pass
 
+
 class CurrencyError(Exception):
     '''
     Exception thrown, if a wrong currency is provided
     '''
     pass
 
+
 class TooMuchCurrencies(Exception):
     '''
-    Exception thrown, if too much currencies are mapped to the provided currency symbol
+    Exception thrown, if too much currencies are mapped to the provided
+    currency symbol
     '''
     pass
