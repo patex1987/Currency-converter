@@ -82,6 +82,7 @@ def test_symbols_map_values(converter):
     currency_length_check = (len(currency) == 3 for currency in currencies)
     assert all(currency_length_check)
 
+
 def test_input_currency_wrong_inputs(converter):
     '''
     Tests if an improper input currency raises an Exception
@@ -90,6 +91,7 @@ def test_input_currency_wrong_inputs(converter):
         assert converter._check_input_currency(raw_input_currency='blahblah')
     with pytest.raises(currency_exceptions.CurrencyError):
         assert converter._check_input_currency(raw_input_currency='££')
+
 
 def test_input_currency_right_outputs(converter):
     '''
@@ -102,6 +104,7 @@ def test_input_currency_right_outputs(converter):
     assert converter._check_input_currency(raw_input_currency='€') == 'EUR'
     assert converter._check_input_currency(raw_input_currency='Kč') == 'CZK'
 
+
 def test_output_currencies_with_none(converter):
     '''
     tests if _check_output_currency returns the right list if None is provided
@@ -109,6 +112,7 @@ def test_output_currencies_with_none(converter):
     '''
     output_currencies = [currency for currency in converter.available_currencies if currency != 'EUR']
     assert converter._check_output_currency('EUR', raw_output_currency=None) == output_currencies
+
 
 def test_output_currency_wrong_inputs(converter):
     '''
@@ -119,12 +123,16 @@ def test_output_currency_wrong_inputs(converter):
     with pytest.raises(currency_exceptions.CurrencyError):
         assert converter._check_output_currency('EUR', raw_output_currency='££')
 
+
 def test_output_currency_right_outputs(converter):
     '''
     Tests the output of _check_output_currency
     '''
+    dollar_currencies = converter._check_output_currency('EUR', raw_output_currency='$')
+    assert 'USD' in dollar_currencies
     assert converter._check_output_currency('EUR', raw_output_currency='CZK') == ['CZK']
     assert converter._check_output_currency('CZK', raw_output_currency='EUR') == ['EUR']
+
 
 def test_input_amount_number(converter):
     '''

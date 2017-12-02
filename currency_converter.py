@@ -37,9 +37,17 @@ class CurrencyConverter(object):
         converts the input amount into a structured output
         output currency can be a single currency or all available currencies
         '''
-        real_input_currency = self._check_input_currency(raw_input_currency)
-        real_output_currency = self._check_output_currency(real_input_currency, raw_output_currency)
-        self._check_input_amount(input_amount)
+        try:
+            input_currency = self._check_input_currency(raw_input_currency)
+            output_currencies = self._check_output_currency(input_currency,
+                                                            raw_output_currency)
+            self._check_input_amount(input_amount)
+        except exceptions.ConversionError:
+            pass
+        except exceptions.CurrencyError:
+            pass
+        except exceptions.TooMuchCurrencies:
+            pass
 #         self._check_rates_actuality()
 #         output_currencies = self._get_current_outputs(input_currency,
 #                                                       output_currency)
@@ -174,11 +182,19 @@ class CurrencyConverter(object):
         Checks whether the input currency is in correct format and if it
         exists. Returns a list of currency outputs
         '''
-        output_currencies = []
         if raw_output_currency is None:
             output_currencies = [currency for currency
                                  in self.available_currencies
-                                 if currency!=real_input_currency]
+                                 if currency != real_input_currency]
+            return output_currencies
+        b_output_currency = bytes(raw_output_currency, encoding='utf-8')
+        if b_output_currency in self.symbols_map.keys():
+            possible_currencies = self.symbols_map[b_output_currency]
+            output_currencies = list(set(self.available_currencies) &
+                                     set(possible_currencies))
+            return output_currencies
+        if raw_output_currency in self.available_currencies:
+            output_currencies = [raw_output_currency]
             return output_currencies
         raise exceptions.CurrencyError
 
@@ -190,7 +206,6 @@ class CurrencyConverter(object):
             raise exceptions.ConversionError
 
 
-
 if __name__ == '__main__':
     a = CurrencyConverter()
-    print(a._check_input_currency(raw_input_currency='$'))
+    print(a._check_output_currency('EUR', raw_output_currency='$'))
