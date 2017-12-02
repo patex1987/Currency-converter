@@ -97,7 +97,7 @@ def test_input_currency_right_outputs(converter):
     '''
     Tests the output of _check_input_currency
     '''
-    with pytest.raises(currency_exceptions.TooMuchCurrencies):
+    with pytest.raises(currency_exceptions.TooManyCurrencies):
         assert converter._check_input_currency(raw_input_currency='$')
     assert converter._check_input_currency(raw_input_currency='EUR') == 'EUR'
     assert converter._check_input_currency(raw_input_currency='CZK') == 'CZK'
@@ -140,3 +140,76 @@ def test_input_amount_number(converter):
     '''
     with pytest.raises(currency_exceptions.ConversionError):
         assert converter._check_input_amount(input_amount='text')
+
+
+def test_conversion_wrong_amount(converter):
+    '''
+    Tests the conversion result dictionary if wrong input amount is provided
+    '''
+    conversion_result = converter.convert(input_amount='text',
+                                          raw_input_currency='EUR',
+                                          raw_output_currency='USD')
+    err_str = conversion_result['output']['error']
+    test_str = 'Conversion error, check the input parameters'
+    assert err_str == test_str
+
+
+def test_conversion_wrong_input_currency(converter):
+    '''
+    Tests the conversion result dictionary if wrong input currency is provided
+    '''
+    conversion_result = converter.convert(input_amount=155.5,
+                                          raw_input_currency='££',
+                                          raw_output_currency='USD')
+    err_str = conversion_result['output']['error']
+    test_str = 'Conversion error, the input currency can\'t be' + \
+               ' recognized'
+    assert err_str == test_str
+
+
+def test_conversion_too_many_input_currencies(converter):
+    '''
+    Tests the conversion result dictionary if a symbol representing more than
+    one currency is provided as input currency
+    '''
+    conversion_result = converter.convert(input_amount=155.5,
+                                          raw_input_currency='$',
+                                          raw_output_currency='GBP')
+    err_str = conversion_result['output']['error']
+    test_str = 'Conversion error, the input symbol represents more' + \
+               'than one currency, try to use 3-letter currency code'
+    assert err_str == test_str
+
+
+def test_conversion_result_input_normal(converter):
+    '''
+    Tests the conversion result dictionary's input values
+    if 3 letter currency code is provided as currency
+    '''
+    input_amount = 155.5
+    input_currency = 'EUR'
+    conversion_result = converter.convert(input_amount=input_amount,
+                                          raw_input_currency=input_currency,
+                                          raw_output_currency='GBP')
+    input_test_dict = {}
+    input_test_dict['input'] = {}
+    input_test_dict['input']['amount'] = input_amount
+    input_test_dict['input']['currency'] = input_currency
+    assert conversion_result['input'] == input_test_dict['input']
+
+
+def test_conversion_result_input_symbol(converter):
+    '''
+    Tests the conversion result dictionary's input values if a symbol is
+    provided as currency - symbol with only one currency assigned
+    '''
+    input_amount = 155.5
+    input_currency = '€'
+    conversion_result = converter.convert(input_amount=input_amount,
+                                          raw_input_currency=input_currency,
+                                          raw_output_currency='GBP')
+    input_test_dict = {}
+    input_test_dict['input'] = {}
+    input_test_dict['input']['amount'] = input_amount
+    input_test_dict['input']['currency'] = 'EUR'
+    assert conversion_result['input'] == input_test_dict['input']

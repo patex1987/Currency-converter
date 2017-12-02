@@ -34,7 +34,7 @@ class CurrencyError(Exception):
     pass
 
 
-class TooMuchCurrencies(Exception):
+class TooManyCurrencies(Exception):
     '''
     Exception thrown, if too much currencies are mapped to the provided
     currency symbol

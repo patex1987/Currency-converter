@@ -37,17 +37,30 @@ class CurrencyConverter(object):
         converts the input amount into a structured output
         output currency can be a single currency or all available currencies
         '''
+        conversion_result = {}
+        input_dict = self._get_input_dict(input_amount,
+                                          raw_input_currency)
+        conversion_result['input'] = input_dict
+        conversion_result['output'] = {}
         try:
             input_currency = self._check_input_currency(raw_input_currency)
             output_currencies = self._check_output_currency(input_currency,
                                                             raw_output_currency)
             self._check_input_amount(input_amount)
+            conversion_result['input'] = self._get_input_dict(input_amount,
+                                                              input_currency)
         except exceptions.ConversionError:
-            pass
+            err_str = 'Conversion error, check the input parameters'
+            conversion_result['output']['error'] = err_str
         except exceptions.CurrencyError:
-            pass
-        except exceptions.TooMuchCurrencies:
-            pass
+            err_str = 'Conversion error, the input currency can\'t be' + \
+                      ' recognized'
+            conversion_result['output']['error'] = err_str
+        except exceptions.TooManyCurrencies:
+            err_str = 'Conversion error, the input symbol represents more' + \
+                      'than one currency, try to use 3-letter currency code'
+            conversion_result['output']['error'] = err_str
+        return conversion_result
 #         self._check_rates_actuality()
 #         output_currencies = self._get_current_outputs(input_currency,
 #                                                       output_currency)
@@ -160,6 +173,15 @@ class CurrencyConverter(object):
         current_rates = fixer_response.json()['rates']
         return current_rates
 
+    def _get_input_dict(self, amount, currency):
+        '''
+        converts amount and currency into a dictionary
+        '''
+        input_dict = {}
+        input_dict['amount'] = amount
+        input_dict['currency'] = currency
+        return input_dict
+
     def _check_input_currency(self, raw_input_currency):
         '''
         Checks whether the input currency is in correct format and if its
@@ -171,7 +193,7 @@ class CurrencyConverter(object):
         if b_input_currency in self.symbols_map.keys():
             input_currencies = self.symbols_map[b_input_currency]
             if len(input_currencies) != 1:
-                raise exceptions.TooMuchCurrencies
+                raise exceptions.TooManyCurrencies
             real_input_currency = input_currencies[0]
         if real_input_currency in self.available_currencies:
             return real_input_currency
