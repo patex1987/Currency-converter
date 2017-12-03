@@ -12,6 +12,7 @@ import requests
 import currency_exceptions as exceptions
 import pytz
 import decimal
+import json
 
 
 class CurrencyConverter(object):
@@ -63,14 +64,17 @@ class CurrencyConverter(object):
                       ' recognized'
             conversion_result['output']['error'] = err_str
         except exceptions.TooManyCurrencies:
-            err_str = 'Conversion error, the input symbol represents more' + \
+            err_str = 'Conversion error, the input symbol represents more ' + \
                       'than one currency, try to use 3-letter currency code'
             conversion_result['output']['error'] = err_str
         return conversion_result
-#         self._check_rates_actuality()
-#         output_amounts = self._get_all_conversions(input_amount,
-#                                                    input_currency,
-#                                                    output_currencies)
+
+    def stringify_output(self, conversion_dict):
+        '''
+        Returns conversion output in a pretty string format
+        '''
+        pretty_output = json.dumps(output, indent=4, sort_keys=True)
+        return pretty_output
 
     def _convert_single_currency(self,
                                  input_amount,
@@ -96,9 +100,10 @@ class CurrencyConverter(object):
         act_currency = self.base_currency
         try:
             act_rates = self._get_rates_for_base(act_currency)
+            act_rates[self.base_currency] = 1.0
             actual_rates['rates'][act_currency] = act_rates
             actual_rates['last_update'] = dt.datetime.now(tz=pytz.timezone('CET'))
-            self.available_currencies = [self.base_currency] + list(act_rates.keys())
+            self.available_currencies = list(act_rates.keys())
             return actual_rates
         except exceptions.FixerError:
             pass
@@ -182,15 +187,11 @@ class CurrencyConverter(object):
         '''
         dec_input = decimal.Decimal(input_amount)
         dec_conversion = decimal.Decimal(conversion_rate)
-        print(dec_input, dec_conversion)
-
         output_amount = dec_input * dec_conversion
         precision = decimal.Decimal('.01')
         rounding = decimal.ROUND_HALF_UP
         rounded_output = decimal.Decimal(output_amount.quantize(precision,
                                                                 rounding=rounding))
-
-        print(rounded_output)
         return float(rounded_output)
 
     def _get_rates_for_base(self, base_currency):
@@ -246,7 +247,8 @@ class CurrencyConverter(object):
         if b_output_currency in self.symbols_map.keys():
             possible_currencies = self.symbols_map[b_output_currency]
             output_currencies = list(set(self.available_currencies) &
-                                     set(possible_currencies))
+                                     set(possible_currencies) -
+                                     set([real_input_currency]))
             return output_currencies
         if raw_output_currency in self.available_currencies:
             output_currencies = [raw_output_currency]
@@ -263,5 +265,8 @@ class CurrencyConverter(object):
 
 if __name__ == '__main__':
     a = CurrencyConverter()
-    print(a.available_currencies)
-    print(a.actual_rates['rates'][a.base_currency]['GBP'])
+    output = a.convert(input_amount=1000,
+                       raw_input_currency='EUR',
+                       raw_output_currency='USD')
+
+    print(a.stringify_output(output))

@@ -178,7 +178,7 @@ def test_conversion_too_many_input_currencies(converter):
                                           raw_input_currency='$',
                                           raw_output_currency='GBP')
     err_str = conversion_result['output']['error']
-    test_str = 'Conversion error, the input symbol represents more' + \
+    test_str = 'Conversion error, the input symbol represents more ' + \
                'than one currency, try to use 3-letter currency code'
     assert err_str == test_str
 
@@ -236,10 +236,16 @@ def test_actuality(converter):
 
 def test_single_conversion_rate_output(converter):
     '''
-    Tests whether the conversion rate between two currencies is a number
+    Tests whether conversion rate between the same currencies returns 1
     '''
     assert converter._calculate_current_rate('EUR', 'EUR') == 1.0
 
+
+def test_single_conversion_rate_fixer_io(converter):
+    '''
+    Tests whether conversion rate calculation returns the same value as
+    retrieved from fixer.io
+    '''
     input_currency = converter.base_currency
     output_currency = random.choice([currency for currency
                                      in converter.available_currencies
@@ -249,6 +255,11 @@ def test_single_conversion_rate_output(converter):
                                                         output_currency)
     assert returned_output == expected_output
 
+
+def test_single_conversion_rate_calculated(converter):
+    '''
+    Tests calculated conversion rate values
+    '''
     test_rates = {'AUD': 1.5693,
                   'CZK': 25.524,
                   'DKK': 7.442,
@@ -258,79 +269,111 @@ def test_single_conversion_rate_output(converter):
                   'PLN': 4.2129,
                   'USD': 1.1885}
     converter.actual_rates['rates']['EUR'] = test_rates
-    threshold = 0.001
 
-    input_currency = 'CZK'
-    output_currency = 'AUD'
-    returned_output = converter._calculate_current_rate(input_currency,
-                                                        output_currency)
-    assert abs(returned_output - 0.061483) < threshold
+    def check_calculated_rate(input_currency,
+                              output_currency,
+                              expected_val,
+                              threshold=0.001):
+        '''
+        assertion test help fucntion
+        '''
+        returned_output = converter._calculate_current_rate(input_currency,
+                                                            output_currency)
+        assert abs(returned_output - expected_val) < threshold
 
-    input_currency = 'DKK'
-    output_currency = 'GBP'
-    returned_output = converter._calculate_current_rate(input_currency,
-                                                        output_currency)
-    assert abs(returned_output - 0.1184) < threshold
-
-    input_currency = 'PLN'
-    output_currency = 'JPY'
-    returned_output = converter._calculate_current_rate(input_currency,
-                                                        output_currency)
-    assert abs(returned_output - 31.736) < threshold
-
-    input_currency = 'HRK'
-    output_currency = 'USD'
-    returned_output = converter._calculate_current_rate(input_currency,
-                                                        output_currency)
-    assert abs(returned_output - 0.15731) < threshold
+    test_sets = (('CZK', 'AUD', 0.061483),
+                 ('DKK', 'GBP', 0.1184),
+                 ('PLN', 'JPY', 31.736),
+                 ('HRK', 'USD', 0.15731))
+    for test_set in test_sets:
+        check_calculated_rate(*test_set)
 
 
 def test_output_amount(converter):
     '''
     Tests the correctness of the output amount
     '''
-    input_amount = 155.12
-    conversion_rate = 1.0
-    output_amount = converter._calculate_output_amount(input_amount,
-                                                       conversion_rate)
-    assert output_amount == input_amount
 
-    input_amount = 14.85
-    conversion_rate = 0.187653
-    output_amount = converter._calculate_output_amount(input_amount,
-                                                       conversion_rate)
-    assert output_amount == 2.79
+    def check_output_amount(input_amount, conversion_rate, expected_amount):
+        '''
+        Helper function for testing
+        '''
+        output_amount = converter._calculate_output_amount(input_amount,
+                                                           conversion_rate)
+        assert output_amount == expected_amount
 
-    input_amount = 5
-    conversion_rate = 2
-    output_amount = converter._calculate_output_amount(input_amount,
-                                                       conversion_rate)
-    assert output_amount == 10.00
-
-    input_amount = 5
-    conversion_rate = 0.5
-    output_amount = converter._calculate_output_amount(input_amount,
-                                                       conversion_rate)
-    assert output_amount == 2.50
+    test_sets = ((155.12, 1.0, 155.12),
+                 (14.85, 0.187653, 2.79),
+                 (5, 2, 10),
+                 (5, 0.5, 2.50))
+    for test_set in test_sets:
+        check_output_amount(*test_set)
 
 
 def test_conversion_result_output_node(converter):
     '''
     Tests the conversion result dictionary's output node
     '''
-    input_amount = 155.5
-    input_currency = '€'
-    output_currency = 'GBP'
-    conversion_result = converter.convert(input_amount,
-                                          input_currency,
-                                          output_currency)
-    assert list(conversion_result['output'].keys()) == ['GBP']
+    def check_conversion_output_node(input_amount,
+                                     input_currency,
+                                     output_currency,
+                                     expected_result):
+        '''
+        Helper function for testing
+        '''
+        conversion_result = converter.convert(input_amount,
+                                              input_currency,
+                                              output_currency)
+        conversion_output_currencies = list(conversion_result['output'].keys())
+        assert sorted(conversion_output_currencies) == sorted(expected_result)
 
-    input_amount = 155.5
-    input_currency = '€'
-    output_currency = None
-    conversion_result = converter.convert(input_amount,
-                                          input_currency,
-                                          output_currency)
-    expected_output = converter.
-    assert list(conversion_result['output'].keys()) == ['GBP']
+    eur_outputs = [currency for currency
+                   in converter.available_currencies
+                   if currency != 'EUR']
+    gbp_outputs = [currency for currency
+                   in converter.available_currencies
+                   if currency != 'GBP']
+    dollar_outputs = ['AUD', 'HKD', 'SGD', 'CAD', 'USD', 'NZD', 'MXN']
+    aud_dollar_outputs = ['HKD', 'SGD', 'CAD', 'USD', 'NZD', 'MXN']
+
+    test_sets = ((155.5, '€', 'GBP', ['GBP']),
+                 (155.5, '€', None, eur_outputs),
+                 (155.5, 'GBP', None, gbp_outputs),
+                 (155.5, 'GBP', '$', dollar_outputs),
+                 (155.5, 'AUD', '$', aud_dollar_outputs))
+    for test_set in test_sets:
+        check_conversion_output_node(*test_set)
+
+
+def test_full_conversion_output(converter):
+    '''
+    Tests the conversion output with fixed rates
+    '''
+    test_rates = {'AUD': 1.5693,
+                  'CZK': 25.524,
+                  'DKK': 7.442,
+                  'GBP': 0.88115,
+                  'HRK': 7.5553,
+                  'JPY': 133.7,
+                  'PLN': 4.2129,
+                  'USD': 1.1885}
+    converter.actual_rates['rates']['EUR'] = test_rates
+
+    def check_conversion_output_dict(output_currency,
+                                     expected_value):
+        '''
+        Helper function for testing
+        '''
+        conversion_result = converter.convert(1.0,
+                                              'EUR',
+                                              output_currency)
+        output_amount = conversion_result['output'][output_currency]
+        expected_value = float("{0:.2f}".format(expected_value))
+        assert output_amount == expected_value
+
+    test_sets = (('GBP', test_rates['GBP']),
+                 ('CZK', test_rates['CZK']),
+                 ('HRK', test_rates['HRK']))
+
+    for test_set in test_sets:
+        check_conversion_output_dict(*test_set)
