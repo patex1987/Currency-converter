@@ -312,3 +312,25 @@ def test_output_amount(converter):
     output_amount = converter._calculate_output_amount(input_amount,
                                                        conversion_rate)
     assert output_amount == 2.50
+
+
+def test_conversion_result_output_node(converter):
+    '''
+    Tests the conversion result dictionary's output node
+    '''
+    input_amount = 155.5
+    input_currency = '€'
+    output_currency = 'GBP'
+    conversion_result = converter.convert(input_amount,
+                                          input_currency,
+                                          output_currency)
+    assert list(conversion_result['output'].keys()) == ['GBP']
+
+    input_amount = 155.5
+    input_currency = '€'
+    output_currency = None
+    conversion_result = converter.convert(input_amount,
+                                          input_currency,
+                                          output_currency)
+    expected_output = converter.
+    assert list(conversion_result['output'].keys()) == ['GBP']
