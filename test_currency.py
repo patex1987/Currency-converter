@@ -8,6 +8,7 @@ import currency_converter
 import currency_exceptions
 import datetime as dt
 import pytz
+import random
 
 @pytest.fixture
 def converter():
@@ -227,11 +228,87 @@ def test_actuality(converter):
     new_update = converter.actual_rates['last_update']
     assert new_update == original_update
 
-    next_update = original_update.replace(hour=16, minute=10)
-    if original_update > next_update:
-        next_update += dt.timedelta(days=1)
-    timestamp_next = next_update.replace(hour=16, minute=11)
-    print(timestamp_next)
-    converter._check_rates_actuality(timestamp_next)
+    timestamp_next_day = original_update + dt.timedelta(days=1)
+    converter._check_rates_actuality(timestamp_next_day)
     new_update = converter.actual_rates['last_update']
     assert new_update > original_update
+
+
+def test_single_conversion_rate_output(converter):
+    '''
+    Tests whether the conversion rate between two currencies is a number
+    '''
+    assert converter._calculate_current_rate('EUR', 'EUR') == 1.0
+
+    input_currency = converter.base_currency
+    output_currency = random.choice([currency for currency
+                                     in converter.available_currencies
+                                     if currency != input_currency])
+    expected_output = converter.actual_rates['rates']['EUR'][output_currency]
+    returned_output = converter._calculate_current_rate(input_currency,
+                                                        output_currency)
+    assert returned_output == expected_output
+
+    test_rates = {'AUD': 1.5693,
+                  'CZK': 25.524,
+                  'DKK': 7.442,
+                  'GBP': 0.88115,
+                  'HRK': 7.5553,
+                  'JPY': 133.7,
+                  'PLN': 4.2129,
+                  'USD': 1.1885}
+    converter.actual_rates['rates']['EUR'] = test_rates
+    threshold = 0.001
+
+    input_currency = 'CZK'
+    output_currency = 'AUD'
+    returned_output = converter._calculate_current_rate(input_currency,
+                                                        output_currency)
+    assert abs(returned_output - 0.061483) < threshold
+
+    input_currency = 'DKK'
+    output_currency = 'GBP'
+    returned_output = converter._calculate_current_rate(input_currency,
+                                                        output_currency)
+    assert abs(returned_output - 0.1184) < threshold
+
+    input_currency = 'PLN'
+    output_currency = 'JPY'
+    returned_output = converter._calculate_current_rate(input_currency,
+                                                        output_currency)
+    assert abs(returned_output - 31.736) < threshold
+
+    input_currency = 'HRK'
+    output_currency = 'USD'
+    returned_output = converter._calculate_current_rate(input_currency,
+                                                        output_currency)
+    assert abs(returned_output - 0.15731) < threshold
+
+
+def test_output_amount(converter):
+    '''
+    Tests the correctness of the output amount
+    '''
+    input_amount = 155.12
+    conversion_rate = 1.0
+    output_amount = converter._calculate_output_amount(input_amount,
+                                                       conversion_rate)
+    assert output_amount == input_amount
+
+    input_amount = 14.85
+    conversion_rate = 0.187653
+    output_amount = converter._calculate_output_amount(input_amount,
+                                                       conversion_rate)
+    assert output_amount == 2.79
+
+    input_amount = 5
+    conversion_rate = 2
+    output_amount = converter._calculate_output_amount(input_amount,
+                                                       conversion_rate)
+    assert output_amount == 10.00
+
+    input_amount = 5
+    conversion_rate = 0.5
+    output_amount = converter._calculate_output_amount(input_amount,
+                                                       conversion_rate)
+    assert output_amount == 2.50

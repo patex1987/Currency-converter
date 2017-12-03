@@ -11,6 +11,7 @@ import numbers
 import requests
 import currency_exceptions as exceptions
 import pytz
+import decimal
 
 
 class CurrencyConverter(object):
@@ -50,6 +51,10 @@ class CurrencyConverter(object):
             self._check_input_amount(input_amount)
             conversion_result['input'] = self._get_input_dict(input_amount,
                                                               input_currency)
+            output_dict = self._get_all_conversions(input_amount,
+                                                    input_currency,
+                                                    output_currencies)
+            conversion_result['output'] = output_dict
         except exceptions.ConversionError:
             err_str = 'Conversion error, check the input parameters'
             conversion_result['output']['error'] = err_str
@@ -125,9 +130,11 @@ class CurrencyConverter(object):
                              input_amount,
                              input_currency,
                              output_currencies):
+        '''
+        converts the input amount into all currencies in the output currencies
+        list
+        '''
         output_conversions = {}
-        if not output_currencies:
-            return {}
         for currency in output_currencies:
             output_amount = self._convert_single_currency(input_amount,
                                                           input_currency,
@@ -152,11 +159,39 @@ class CurrencyConverter(object):
         calculates the currency conversion rate needed to convert from input to
         output conversion. EUR is the basis currency
         '''
+        if input_currency == output_currency:
+            return 1.0
+        if input_currency == self.base_currency:
+            base_currency = self.base_currency
+            return self.actual_rates['rates'][base_currency][output_currency]
+        act_rates = self.actual_rates['rates'][self.base_currency]
+        input_val = decimal.Decimal(act_rates[input_currency])
+        output_val = decimal.Decimal(act_rates[output_currency])
+
+        rate = output_val / input_val
+        precision = decimal.Decimal('.00001')
+        rounding = decimal.ROUND_HALF_UP
+        rounded_rate = decimal.Decimal(rate.quantize(precision,
+                                                     rounding=rounding))
+
+        return float(rounded_rate)
 
     def _calculate_output_amount(self, input_amount, conversion_rate):
         '''
         Returns the output amount
         '''
+        dec_input = decimal.Decimal(input_amount)
+        dec_conversion = decimal.Decimal(conversion_rate)
+        print(dec_input, dec_conversion)
+
+        output_amount = dec_input * dec_conversion
+        precision = decimal.Decimal('.01')
+        rounding = decimal.ROUND_HALF_UP
+        rounded_output = decimal.Decimal(output_amount.quantize(precision,
+                                                                rounding=rounding))
+
+        print(rounded_output)
+        return float(rounded_output)
 
     def _get_rates_for_base(self, base_currency):
         '''
@@ -228,4 +263,5 @@ class CurrencyConverter(object):
 
 if __name__ == '__main__':
     a = CurrencyConverter()
-    print(a._check_output_currency('EUR', raw_output_currency='$'))
+    print(a.available_currencies)
+    print(a.actual_rates['rates'][a.base_currency]['GBP'])
