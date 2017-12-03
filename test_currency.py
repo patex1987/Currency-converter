@@ -6,7 +6,8 @@ Created on 28. 11. 2017
 import pytest
 import currency_converter
 import currency_exceptions
-
+import datetime as dt
+import pytz
 
 @pytest.fixture
 def converter():
@@ -213,3 +214,24 @@ def test_conversion_result_input_symbol(converter):
     input_test_dict['input']['amount'] = input_amount
     input_test_dict['input']['currency'] = 'EUR'
     assert conversion_result['input'] == input_test_dict['input']
+
+
+def test_actuality(converter):
+    '''
+    Tests whether a timestamp fires an update of the conversion table or not
+    Note: Fixer.io is updated 4 PM CET
+    '''
+    original_update = converter.actual_rates['last_update']
+    timestamp_prev_day = original_update + dt.timedelta(days=-1)
+    converter._check_rates_actuality(timestamp_prev_day)
+    new_update = converter.actual_rates['last_update']
+    assert new_update == original_update
+
+    next_update = original_update.replace(hour=16, minute=10)
+    if original_update > next_update:
+        next_update += dt.timedelta(days=1)
+    timestamp_next = next_update.replace(hour=16, minute=11)
+    print(timestamp_next)
+    converter._check_rates_actuality(timestamp_next)
+    new_update = converter.actual_rates['last_update']
+    assert new_update > original_update

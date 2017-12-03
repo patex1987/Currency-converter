@@ -6,10 +6,11 @@ Created on 27. 11. 2017
 
 from collections import defaultdict
 import datetime as dt
+import io
 import numbers
 import requests
 import currency_exceptions as exceptions
-import io
+import pytz
 
 
 class CurrencyConverter(object):
@@ -62,12 +63,9 @@ class CurrencyConverter(object):
             conversion_result['output']['error'] = err_str
         return conversion_result
 #         self._check_rates_actuality()
-#         output_currencies = self._get_current_outputs(input_currency,
-#                                                       output_currency)
 #         output_amounts = self._get_all_conversions(input_amount,
 #                                                    input_currency,
 #                                                    output_currencies)
-#         return output_amounts
 
     def _convert_single_currency(self,
                                  input_amount,
@@ -94,7 +92,7 @@ class CurrencyConverter(object):
         try:
             act_rates = self._get_rates_for_base(act_currency)
             actual_rates['rates'][act_currency] = act_rates
-            actual_rates['last_update'] = dt.datetime.now()
+            actual_rates['last_update'] = dt.datetime.now(tz=pytz.timezone('CET'))
             self.available_currencies = [self.base_currency] + list(act_rates.keys())
             return actual_rates
         except exceptions.FixerError:
@@ -123,12 +121,6 @@ class CurrencyConverter(object):
                 symbol_map[symbol_encoded].append(currency)
         return symbol_map
 
-    def _get_current_outputs(self, input_currency, output_currency):
-        '''
-        returns a list of possible output currencies for the selected input
-        currency
-        '''
-
     def _get_all_conversions(self,
                              input_amount,
                              input_currency,
@@ -143,11 +135,17 @@ class CurrencyConverter(object):
             output_conversions[currency] = output_amount
         return output_conversions
 
-    def _check_rates_actuality(self):
+    def _check_rates_actuality(self, timestamp):
         '''
         Check whether the actual_rates dictionary holds the newest currency
         rates
         '''
+        last_update = self.actual_rates['last_update']
+        next_update = last_update.replace(hour=16, minute=10)
+        if last_update > next_update:
+            next_update += dt.timedelta(days=1)
+        if timestamp > next_update:
+            self.actual_rates = self._get_actual_rates()
 
     def _calculate_current_rate(self, input_currency, output_currency):
         '''
