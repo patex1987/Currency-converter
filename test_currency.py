@@ -3,12 +3,13 @@ Created on 28. 11. 2017
 
 @author: patex1987
 '''
+import datetime as dt
+import random
 import pytest
 import currency_converter
 import currency_exceptions
-import datetime as dt
-import pytz
-import random
+import requests
+
 
 @pytest.fixture
 def converter():
@@ -64,7 +65,8 @@ def test_symbols_presence_wo_symbols(converter_without_symbols):
     '''
     Tests symbols in a converter without symbols
     '''
-    assert converter_without_symbols.symbols_map is None
+    assert isinstance(converter_without_symbols.symbols_map, dict)
+    assert not list(converter_without_symbols.symbols_map.keys())
 
 
 def test_symbols_wrong_sep(converter):
@@ -72,7 +74,7 @@ def test_symbols_wrong_sep(converter):
     Tests converter for improper symbol separator
     '''
     with pytest.raises(currency_exceptions.SymbolImportError):
-        converter._get_symbols_map(r'txt\symbols.txt', ';')
+        converter._get_symbols_map(r'txt/symbols.txt', ';')
 
 
 def test_symbols_map_values(converter):
@@ -164,7 +166,7 @@ def test_conversion_wrong_input_currency(converter):
                                           raw_input_currency='££',
                                           raw_output_currency='USD')
     err_str = conversion_result['output']['error']
-    test_str = 'Conversion error, the input currency can\'t be' + \
+    test_str = 'Conversion error, the currency can\'t be' + \
                ' recognized'
     assert err_str == test_str
 
@@ -377,3 +379,23 @@ def test_full_conversion_output(converter):
 
     for test_set in test_sets:
         check_conversion_output_dict(*test_set)
+
+def raise_connection_error():
+    '''
+    Simulates ConnectionError
+    '''
+    raise requests.exceptions.ConnectionError
+
+# def test_conversion_connection_error(converter):
+#     '''
+#     Tests the case, when connection can't be established
+#     '''
+#     print('TEST')
+#     raise_connection_error()
+#     conversion_result = converter.convert(input_amount=155.5,
+#                                           raw_input_currency='EUR',
+#                                           raw_output_currency='USD')
+#     err_str = conversion_result['output']['error']
+#     test_str = 'Connection error!'
+#     print(err_str)
+#     assert err_str == test_str

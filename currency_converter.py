@@ -7,12 +7,13 @@ Created on 27. 11. 2017
 from collections import defaultdict
 import datetime as dt
 import io
-import numbers
-import requests
-import currency_exceptions as exceptions
-import pytz
 import decimal
 import json
+import numbers
+import requests
+from requests.exceptions import ConnectionError
+import currency_exceptions as exceptions
+import pytz
 
 
 class CurrencyConverter(object):
@@ -20,15 +21,18 @@ class CurrencyConverter(object):
     This class handles all the currency conversion related operations
     '''
 
-    def __init__(self, symbols_file=r'txt\symbols.txt', symbols_sep='\t'):
+    def __init__(self, symbols_file=r'txt/symbols.txt', symbols_sep='\t'):
         '''
         Constructor
         '''
         self.api_base_url = 'https://api.fixer.io'
         self.base_currency = 'EUR'
-        self.available_currencies = None
-        self.actual_rates = self._get_actual_rates()
-        self.symbols_map = None
+        self.available_currencies = []
+        self.symbols_map = {}
+        try:
+            self.actual_rates = self._get_actual_rates()
+        except requests.exceptions.ConnectionError:
+            return
         if symbols_file is not None:
             self.symbols_map = self._get_symbols_map(symbols_file, symbols_sep)
 
@@ -60,12 +64,15 @@ class CurrencyConverter(object):
             err_str = 'Conversion error, check the input parameters'
             conversion_result['output']['error'] = err_str
         except exceptions.CurrencyError:
-            err_str = 'Conversion error, the input currency can\'t be' + \
+            err_str = 'Conversion error, the currency can\'t be' + \
                       ' recognized'
             conversion_result['output']['error'] = err_str
         except exceptions.TooManyCurrencies:
             err_str = 'Conversion error, the input symbol represents more ' + \
                       'than one currency, try to use 3-letter currency code'
+            conversion_result['output']['error'] = err_str
+        except ConnectionError:
+            err_str = 'Connection error!'
             conversion_result['output']['error'] = err_str
         return conversion_result
 
@@ -73,7 +80,7 @@ class CurrencyConverter(object):
         '''
         Returns conversion output in a pretty string format
         '''
-        pretty_output = json.dumps(output, indent=4, sort_keys=True)
+        pretty_output = json.dumps(conversion_dict, indent=4, sort_keys=True)
         return pretty_output
 
     def _convert_single_currency(self,
@@ -222,6 +229,8 @@ class CurrencyConverter(object):
         contained in the available currencies or symbols. Returns 3 letter
         currency codes (Converts symbol to currency) 
         '''
+        if not self.available_currencies:
+            raise requests.exceptions.ConnectionError
         real_input_currency = raw_input_currency
         b_input_currency = bytes(raw_input_currency, encoding='utf-8')
         if b_input_currency in self.symbols_map.keys():
