@@ -6,7 +6,7 @@ Created on 28. 11. 2017
 import datetime as dt
 import random
 import pytest
-from currency_converter import CurrencyConverter
+from converter_class import CurrencyConverter
 import currency_exceptions
 import requests
 import mock
@@ -382,7 +382,7 @@ def test_disconnected_conversion(mocker):
     Tests what happens if the computer is disconnected from the internet
     uses pytest-mock to inject ConnectionError
     '''
-    # converter = currency_converter.CurrencyConverter()
+    # converter = converter_class.CurrencyConverter()
     mocked_converter = mocker.patch.object(CurrencyConverter,
                                            '_check_rates_actuality',
                                            autospec=True)
