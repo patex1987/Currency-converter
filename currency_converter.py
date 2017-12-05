@@ -8,10 +8,18 @@ Can be used to convert money between different currencies
 '''
 import argparse
 import sys
+from converter_class import CurrencyConverter
 
 
 def main(arguments):
-    print(len(arguments))
+    '''
+    '''
+    converter = CurrencyConverter()
+    conv_result = converter.convert(arguments.raw_input_amount,
+                                    arguments.raw_input_currency,
+                                    arguments.raw_output_currency)
+    output = converter.stringify_output(conv_result)
+    print(output)
 
 
 def get_parser():
@@ -19,17 +27,17 @@ def get_parser():
     Gets the command line parser
     '''
     parser = argparse.ArgumentParser(description="Log File converter")
-    parser.add_argument("-input_amount",
+    parser.add_argument("--input_amount",
                         required=True,
                         type=float,
                         dest='raw_input_amount',
                         help="Input amount to be converted")
-    parser.add_argument('-input_currency',
+    parser.add_argument('--input_currency',
                         required=True,
                         dest='raw_input_currency',
                         help='Input currency. 2 options: 3-letter currency ' +
                              'code; currency symbol')
-    parser.add_argument('-output_currency',
+    parser.add_argument('--output_currency',
                         default=None,
                         dest='raw_output_currency',
                         help='Output currency. 2 options: 3-letter currency ' +
@@ -40,4 +48,4 @@ def get_parser():
 
 if __name__ == '__main__':
     ARGS = get_parser().parse_args()
-    sys.exit(main(*ARGS))
+    sys.exit(main(ARGS))
