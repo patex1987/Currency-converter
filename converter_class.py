@@ -14,6 +14,8 @@ import requests
 from requests.exceptions import ConnectionError
 import currency_exceptions as exceptions
 import pytz
+import os
+import pickle
 
 
 class CurrencyConverter(object):
@@ -99,6 +101,18 @@ class CurrencyConverter(object):
                                                       actual_conversion_rate)
         return output_amount
 
+    def _check_rates_file(self, file_path):
+        '''
+        TODO: improve this method, write tests
+        checks, whether a pickle file with the rates exist. If yes loads the
+        conversion rates from the pickle
+        '''
+        if not os.path.isfile(file_path):
+            return self._get_actual_rates()
+        with open(file_path, 'rb') as handle:
+            actual_rates = pickle.load(handle)
+        return actual_rates
+
     def _get_actual_rates(self):
         '''
         Retrieves the actual currency conversion rates from fixer.io
@@ -160,6 +174,7 @@ class CurrencyConverter(object):
         '''
         Check whether the actual_rates dictionary holds the newest currency
         rates
+        TODO: pickle testing
         '''
         last_update = self.actual_rates['last_update']
         next_update = last_update.replace(hour=16, minute=10)
@@ -167,6 +182,10 @@ class CurrencyConverter(object):
             next_update += dt.timedelta(days=1)
         if timestamp > next_update:
             self.actual_rates = self._get_actual_rates()
+            with open('rates.pickle', 'wb') as handle:
+                pickle.dump(self.actual_rates,
+                            handle,
+                            protocol=pickle.HIGHEST_PROTOCOL)
 
     def _calculate_current_rate(self, input_currency, output_currency):
         '''
@@ -229,7 +248,7 @@ class CurrencyConverter(object):
         '''
         Checks whether the input currency is in correct format and if its
         contained in the available currencies or symbols. Returns 3 letter
-        currency codes (Converts symbol to currency) 
+        currency codes (Converts symbol to currency)
         '''
         if not self.available_currencies:
             raise requests.exceptions.ConnectionError
@@ -276,8 +295,3 @@ class CurrencyConverter(object):
 
 if __name__ == '__main__':
     a = CurrencyConverter()
-    output = a.convert(input_amount=1000,
-                       raw_input_currency='EUR',
-                       raw_output_currency='USD')
-
-    print(a.stringify_output(output))
