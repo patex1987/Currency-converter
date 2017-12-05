@@ -394,3 +394,21 @@ def test_disconnected_conversion(mocker):
     err_message = conversion_result['output']['error']
     expected_output = 'Connection error!'
     assert err_message == expected_output
+
+
+def test_disconnected_init(mocker):
+    '''
+    Tests what happens if the computer is disconnected from the internet
+    during converter object initialization
+    '''
+    mocked_converter = mocker.patch.object(CurrencyConverter,
+                                           '_get_actual_rates',
+                                           autospec=True)
+    mocked_converter.side_effect = requests.exceptions.ConnectionError
+    discon_converter = CurrencyConverter()
+    conversion_result = discon_converter.convert(input_amount=100,
+                                                 raw_input_currency='EUR',
+                                                 raw_output_currency='EUR')
+    err_message = conversion_result['output']['error']
+    expected_output = 'Connection error!'
+    assert err_message == expected_output
