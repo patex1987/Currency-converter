@@ -6,9 +6,11 @@ Created on 28. 11. 2017
 import datetime as dt
 import random
 import pytest
-import currency_converter
+from currency_converter import CurrencyConverter
 import currency_exceptions
 import requests
+import mock
+from pytest_mock import mocker
 
 
 @pytest.fixture
@@ -16,7 +18,7 @@ def converter():
     '''
     Returns a CurrencyConverter object
     '''
-    return currency_converter.CurrencyConverter()
+    return CurrencyConverter()
 
 
 @pytest.fixture
@@ -24,14 +26,7 @@ def converter_without_symbols():
     '''
     Returns a CurrencyConverter object
     '''
-    return currency_converter.CurrencyConverter(symbols_file=None)
-
-
-def test_default_available_currencies(converter):
-    """
-    Test of the structure, when a single element is inserted
-    """
-    assert converter.available_currencies is not None
+    return CurrencyConverter(symbols_file=None)
 
 
 def test_base_rate(converter):
@@ -82,7 +77,8 @@ def test_symbols_map_values(converter):
     Tests if all values in the symbols map dictionary is 3 letter long
     '''
     symbol_values = list(converter.symbols_map.values())
-    currencies = [currency for sublist in symbol_values for currency in sublist]
+    currencies = [currency for sublist in symbol_values
+                  for currency in sublist]
     currency_length_check = (len(currency) == 3 for currency in currencies)
     assert all(currency_length_check)
 
@@ -380,22 +376,21 @@ def test_full_conversion_output(converter):
     for test_set in test_sets:
         check_conversion_output_dict(*test_set)
 
-def raise_connection_error():
-    '''
-    Simulates ConnectionError
-    '''
-    raise requests.exceptions.ConnectionError
 
-# def test_conversion_connection_error(converter):
-#     '''
-#     Tests the case, when connection can't be established
-#     '''
-#     print('TEST')
-#     raise_connection_error()
-#     conversion_result = converter.convert(input_amount=155.5,
-#                                           raw_input_currency='EUR',
-#                                           raw_output_currency='USD')
-#     err_str = conversion_result['output']['error']
-#     test_str = 'Connection error!'
-#     print(err_str)
-#     assert err_str == test_str
+def test_disconnected_conversion(mocker):
+    '''
+    Tests what happens if the computer is disconnected from the internet
+    uses pytest-mock to inject ConnectionError
+    '''
+    # converter = currency_converter.CurrencyConverter()
+    mocked_converter = mocker.patch.object(CurrencyConverter,
+                                           '_check_rates_actuality',
+                                           autospec=True)
+    mocked_converter.side_effect = requests.exceptions.ConnectionError
+    discon_converter = CurrencyConverter()
+    conversion_result = discon_converter.convert(input_amount=100,
+                                                 raw_input_currency='EUR',
+                                                 raw_output_currency='EUR')
+    err_message = conversion_result['output']['error']
+    expected_output = 'Connection error!'
+    assert err_message == expected_output

@@ -54,6 +54,8 @@ class CurrencyConverter(object):
             output_currencies = self._check_output_currency(input_currency,
                                                             raw_output_currency)
             self._check_input_amount(input_amount)
+            timestamp = dt.datetime.now(tz=pytz.timezone('CET'))
+            self._check_rates_actuality(timestamp=timestamp)
             conversion_result['input'] = self._get_input_dict(input_amount,
                                                               input_currency)
             output_dict = self._get_all_conversions(input_amount,
