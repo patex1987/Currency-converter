@@ -439,5 +439,9 @@ def test_check_rates_w_pickle(mocker):
     na_pickle_output = '_get_actual_rates_called'
     mocked_converter.return_value = na_pickle_output
     pickled_converter = CurrencyConverter()
-    output = pickled_converter._check_rates_file('rates.pickle')
-    assert output != na_pickle_output
+    act_rates = pickled_converter._check_rates_file('rates.pickle')
+    # pickled_converter.actual_rates = act_rates
+    assert act_rates != na_pickle_output
+    print(act_rates)
+    assert 'rates' in act_rates.keys()
+
