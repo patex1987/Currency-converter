@@ -229,6 +229,7 @@ def test_actuality(converter):
     timestamp_next_day = original_update + dt.timedelta(days=1)
     converter._check_rates_actuality(timestamp_next_day)
     new_update = converter.actual_rates['last_update']
+
     assert new_update > original_update
 
 
