@@ -399,13 +399,13 @@ def test_disconnected_conversion(mocker):
 def test_disconnected_init(mocker):
     '''
     Tests what happens if the computer is disconnected from the internet
-    during converter object initialization
+    during converter object initialization and no pickle file exists
     '''
     mocked_converter = mocker.patch.object(CurrencyConverter,
                                            '_get_actual_rates',
                                            autospec=True)
     mocked_converter.side_effect = requests.exceptions.ConnectionError
-    discon_converter = CurrencyConverter()
+    discon_converter = CurrencyConverter(rates_file='na.pickle')
     conversion_result = discon_converter.convert(input_amount=100,
                                                  raw_input_currency='EUR',
                                                  raw_output_currency='EUR')
@@ -440,8 +440,36 @@ def test_check_rates_w_pickle(mocker):
     mocked_converter.return_value = na_pickle_output
     pickled_converter = CurrencyConverter()
     act_rates = pickled_converter._check_rates_file('rates.pickle')
-    # pickled_converter.actual_rates = act_rates
     assert act_rates != na_pickle_output
-    print(act_rates)
+    #print(act_rates)
     assert 'rates' in act_rates.keys()
 
+    
+def test_get_available_currencies_empty(converter):
+    '''
+    Tests _get_available_currencies if the actual_rates dictionary is empty
+    '''
+    converter.actual_rates = {}
+    available_currencies = converter._get_available_currencies()
+    assert isinstance(available_currencies, list)
+    assert not available_currencies
+
+def test_get_available_currencies_filled(converter):
+    '''
+    Tests _get_available_currencies if the actual_rates dictionary is filled
+    '''
+    test_rates = {'AUD': 1.5693,
+                  'CZK': 25.524,
+                  'GBP': 0.88115,
+                  'PLN': 4.2129,
+                  'USD': 1.1885}
+    converter.actual_rates['rates']['EUR'] = test_rates
+    expected_currencies = list(test_rates.keys())
+    output_currencies = converter._get_available_currencies()
+    assert sorted(output_currencies) == sorted(expected_currencies)
+
+def test_base_in_available_currencies(converter):
+    '''
+    Tests if base currency is in the list of available_currencies
+    '''
+    assert converter.base_currency in converter.available_currencies

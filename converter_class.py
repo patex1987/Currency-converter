@@ -23,7 +23,10 @@ class CurrencyConverter(object):
     This class handles all the currency conversion related operations
     '''
 
-    def __init__(self, symbols_file=r'txt/symbols.txt', symbols_sep='\t'):
+    def __init__(self,
+                 symbols_file=r'txt/symbols.txt',
+                 symbols_sep='\t',
+                 rates_file='rates.pickle'):
         '''
         Constructor
         TODO: write a method for deducting available rates from actual rates
@@ -32,9 +35,11 @@ class CurrencyConverter(object):
         self.base_currency = 'EUR'
         self.available_currencies = []
         self.symbols_map = {}
+        self.rates_file = rates_file
         try:
-            self.actual_rates = self._get_actual_rates()
-            #self.actual_rates = self._check_rates_file('rates.pickle')
+            # self.actual_rates = self._get_actual_rates()
+            self.actual_rates = self._check_rates_file(self.rates_file)
+            self.available_currencies = self._get_available_currencies()
         except requests.exceptions.ConnectionError:
             return
         if symbols_file is not None:
@@ -129,7 +134,6 @@ class CurrencyConverter(object):
             act_rates[self.base_currency] = 1.0
             actual_rates['rates'][act_currency] = act_rates
             actual_rates['last_update'] = dt.datetime.now(tz=pytz.timezone('CET'))
-            self.available_currencies = list(act_rates.keys())
             return actual_rates
         except exceptions.FixerError:
             pass
@@ -137,6 +141,15 @@ class CurrencyConverter(object):
             return actual_rates
         if actual_rates['last_update'] is None:
             return self.actual_rates
+
+    def _get_available_currencies(self):
+        '''
+        gets a list of available currencies based on the actual_rates dictionary
+        '''
+        if not self.actual_rates:
+            return []
+        return list(self.actual_rates['rates'][self.base_currency].keys())
+        
 
     def _get_symbols_map(self, file_name, separator):
         '''
@@ -185,10 +198,11 @@ class CurrencyConverter(object):
             next_update += dt.timedelta(days=1)
         if timestamp > next_update:
             self.actual_rates = self._get_actual_rates()
-            with open('rates.pickle', 'wb') as handle:
+            with open(self.rates_file, 'wb') as handle:
                 pickle.dump(self.actual_rates,
                             handle,
                             protocol=pickle.HIGHEST_PROTOCOL)
+            self.available_currencies = self._get_available_currencies()
 
     def _calculate_current_rate(self, input_currency, output_currency):
         '''
