@@ -33,9 +33,8 @@ class CurrencyConverter(object):
         self.available_currencies = []
         self.symbols_map = {}
         try:
-            #self.actual_rates = self._get_actual_rates()
-            self.actual_rates = self._check_rates_file('rates.pickle')
-            
+            self.actual_rates = self._get_actual_rates()
+            #self.actual_rates = self._check_rates_file('rates.pickle')
         except requests.exceptions.ConnectionError:
             return
         if symbols_file is not None:

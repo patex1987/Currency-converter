@@ -412,3 +412,33 @@ def test_disconnected_init(mocker):
     err_message = conversion_result['output']['error']
     expected_output = 'Connection error!'
     assert err_message == expected_output
+
+
+def test_check_rates_wo_pickle(mocker):
+    '''
+    Tests whether_check_rates_file calls _get_actual_rates if pickle file
+    doesn't exist
+    '''
+    mocked_converter = mocker.patch.object(CurrencyConverter,
+                                           '_get_actual_rates',
+                                           autospec=True)
+    expected_output = '_get_actual_rates_called'
+    mocked_converter.return_value = expected_output
+    na_file_converter = CurrencyConverter()
+    output = na_file_converter._check_rates_file('na.pickle')
+    assert output == expected_output
+
+
+def test_check_rates_w_pickle(mocker):
+    '''
+    Tests whether_check_rates_file loads actual_rates from pickle
+    '''
+    mocked_converter = mocker.patch.object(CurrencyConverter,
+                                           '_get_actual_rates',
+                                           autospec=True)
+    na_pickle_output = '_get_actual_rates_called'
+    mocked_converter.return_value = na_pickle_output
+    pickled_converter = CurrencyConverter()
+    output = pickled_converter._check_rates_file('rates.pickle')
+    assert output != na_pickle_output
+    assert 'rates' in 
