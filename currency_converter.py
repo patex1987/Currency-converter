@@ -27,7 +27,7 @@ def get_parser():
     Gets the command line parser
     '''
     parser = argparse.ArgumentParser(description="Log File converter")
-    parser.add_argument("--input_amount",
+    parser.add_argument("--amount",
                         required=True,
                         type=float,
                         dest='raw_input_amount',
