@@ -158,6 +158,8 @@ class CurrencyConverter(object):
         '''
         gets currency symbols mapping
         '''
+        if not os.path.isfile(file_name):
+            return {}
         symbol_map = defaultdict(list)
         with io.open(file_name, 'r', encoding='utf-8') as input_file:
             for line in input_file:

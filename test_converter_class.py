@@ -24,9 +24,17 @@ def converter():
 @pytest.fixture
 def converter_without_symbols():
     '''
-    Returns a CurrencyConverter object
+    Returns a CurrencyConverter object without symbols
     '''
     return CurrencyConverter(symbols_file=None)
+
+
+@pytest.fixture
+def converter_with_na_symbols():
+    '''
+    Returns a CurrencyConverter object, where the symbols file doesnt exist
+    '''
+    return CurrencyConverter(symbols_file='blabla.txt')
 
 
 def test_base_rate(converter):
@@ -442,10 +450,9 @@ def test_check_rates_w_pickle(mocker):
     pickled_converter = CurrencyConverter()
     act_rates = pickled_converter._check_rates_file('rates.pickle')
     assert act_rates != na_pickle_output
-    #print(act_rates)
     assert 'rates' in act_rates.keys()
 
-    
+
 def test_get_available_currencies_empty(converter):
     '''
     Tests _get_available_currencies if the actual_rates dictionary is empty
@@ -454,6 +461,7 @@ def test_get_available_currencies_empty(converter):
     available_currencies = converter._get_available_currencies()
     assert isinstance(available_currencies, list)
     assert not available_currencies
+
 
 def test_get_available_currencies_filled(converter):
     '''
@@ -469,8 +477,20 @@ def test_get_available_currencies_filled(converter):
     output_currencies = converter._get_available_currencies()
     assert sorted(output_currencies) == sorted(expected_currencies)
 
+
 def test_base_in_available_currencies(converter):
     '''
     Tests if base currency is in the list of available_currencies
     '''
     assert converter.base_currency in converter.available_currencies
+
+
+def test_conversion_on_na_symbols(converter_with_na_symbols):
+    '''
+    Tests conversion on the converter_with_na_symbols fixture
+    '''
+    conversion_result = converter_with_na_symbols.convert(100, '€', '$')
+    err_str = conversion_result['output']['error']
+    test_str = 'Conversion error, the currency can\'t be' + \
+               ' recognized'
+    assert err_str == test_str
