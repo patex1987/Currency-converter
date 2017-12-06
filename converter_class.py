@@ -26,13 +26,16 @@ class CurrencyConverter(object):
     def __init__(self, symbols_file=r'txt/symbols.txt', symbols_sep='\t'):
         '''
         Constructor
+        TODO: write a method for deducting available rates from actual rates
         '''
         self.api_base_url = 'https://api.fixer.io'
         self.base_currency = 'EUR'
         self.available_currencies = []
         self.symbols_map = {}
         try:
-            self.actual_rates = self._get_actual_rates()
+            #self.actual_rates = self._get_actual_rates()
+            self.actual_rates = self._check_rates_file('rates.pickle')
+            
         except requests.exceptions.ConnectionError:
             return
         if symbols_file is not None:
@@ -104,6 +107,7 @@ class CurrencyConverter(object):
     def _check_rates_file(self, file_path):
         '''
         TODO: improve this method, write tests
+        TODO: available currencies are missing from pickling
         checks, whether a pickle file with the rates exist. If yes loads the
         conversion rates from the pickle
         '''
@@ -111,7 +115,7 @@ class CurrencyConverter(object):
             return self._get_actual_rates()
         with open(file_path, 'rb') as handle:
             actual_rates = pickle.load(handle)
-        return actual_rates
+            return actual_rates
 
     def _get_actual_rates(self):
         '''
@@ -295,3 +299,4 @@ class CurrencyConverter(object):
 
 if __name__ == '__main__':
     a = CurrencyConverter()
+    print(a.convert(100, 'EUR', 'EUR'))
