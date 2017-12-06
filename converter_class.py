@@ -29,7 +29,6 @@ class CurrencyConverter(object):
                  rates_file='rates.pickle'):
         '''
         Constructor
-        TODO: write a method for deducting available rates from actual rates
         '''
         self.api_base_url = 'https://api.fixer.io'
         self.base_currency = 'EUR'
@@ -110,8 +109,6 @@ class CurrencyConverter(object):
 
     def _check_rates_file(self, file_path):
         '''
-        TODO: improve this method, write tests
-        TODO: available currencies are missing from pickling
         checks, whether a pickle file with the rates exist. If yes loads the
         conversion rates from the pickle
         '''
@@ -133,7 +130,8 @@ class CurrencyConverter(object):
             act_rates = self._get_rates_for_base(act_currency)
             act_rates[self.base_currency] = 1.0
             actual_rates['rates'][act_currency] = act_rates
-            actual_rates['last_update'] = dt.datetime.now(tz=pytz.timezone('CET'))
+            act_timestamp = dt.datetime.now(tz=pytz.timezone('CET'))
+            actual_rates['last_update'] = act_timestamp
             if not os.path.isfile(self.rates_file):
                 with open(self.rates_file, 'wb') as handle:
                     pickle.dump(actual_rates,
@@ -149,12 +147,12 @@ class CurrencyConverter(object):
 
     def _get_available_currencies(self):
         '''
-        gets a list of available currencies based on the actual_rates dictionary
+        gets a list of available currencies based on the actual_rates
+        dictionary
         '''
         if not self.actual_rates:
             return []
         return list(self.actual_rates['rates'][self.base_currency].keys())
-        
 
     def _get_symbols_map(self, file_name, separator):
         '''
@@ -195,7 +193,6 @@ class CurrencyConverter(object):
         '''
         Check whether the actual_rates dictionary holds the newest currency
         rates
-        TODO: pickle testing
         '''
         last_update = self.actual_rates['last_update']
         next_update = last_update.replace(hour=16, minute=10)
@@ -313,8 +310,3 @@ class CurrencyConverter(object):
         '''
         if not isinstance(input_amount, numbers.Number):
             raise exceptions.ConversionError
-
-
-if __name__ == '__main__':
-    a = CurrencyConverter()
-    print(a.convert(100, 'EUR', 'EUR'))
