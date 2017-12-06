@@ -134,6 +134,11 @@ class CurrencyConverter(object):
             act_rates[self.base_currency] = 1.0
             actual_rates['rates'][act_currency] = act_rates
             actual_rates['last_update'] = dt.datetime.now(tz=pytz.timezone('CET'))
+            if not os.path.isfile(self.rates_file):
+                with open(self.rates_file, 'wb') as handle:
+                    pickle.dump(actual_rates,
+                                handle,
+                                protocol=pickle.HIGHEST_PROTOCOL)
             return actual_rates
         except exceptions.FixerError:
             pass
