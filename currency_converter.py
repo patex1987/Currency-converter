@@ -26,7 +26,7 @@ def get_parser():
     '''
     Gets the command line parser
     '''
-    parser = argparse.ArgumentParser(description="Log File converter")
+    parser = argparse.ArgumentParser(description="Currency converter CLI")
     parser.add_argument("--amount",
                         required=True,
                         type=float,
@@ -41,7 +41,7 @@ def get_parser():
                         default=None,
                         dest='raw_output_currency',
                         help='Output currency. 2 options: 3-letter currency ' +
-                             'code; currency_symbol. Optional paramter, if ' +
+                             'code; currency_symbol. Optional parameter, if ' +
                              'omitted, all available currencies will be used')
     return parser
 

@@ -39,10 +39,29 @@ Example output:
 
 - For listing the parameters, try: `python currency_converter.py -h`
 
+```
+Currency converter CLI
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --amount RAW_INPUT_AMOUNT
+                        Input amount to be converted
+  --input_currency RAW_INPUT_CURRENCY
+                        Input currency. 2 options: 3-letter currency code;
+                        currency symbol
+  --output_currency RAW_OUTPUT_CURRENCY
+                        Output currency. 2 options: 3-letter currency code;
+                        currency_symbol. Optional parameter, if omitted, all
+                        available currencies will be used
+```
+
 Examples:
 
 ```
 python currency_converter.py --amount 100.0 --input_currency EUR --output_currency CZK
+```
+
+```
 {   
     "input": {
         "amount": 100.0,
@@ -55,7 +74,10 @@ python currency_converter.py --amount 100.0 --input_currency EUR --output_curren
 ```
 
 ```
-python currency_converter.py --amount 100.0 --input_currency EUR --output_currency CZK
+python currency_converter.py --amount 100.0 --input_currency EUR
+```
+
+```
 {
     "input": {
         "amount": 100.0,
