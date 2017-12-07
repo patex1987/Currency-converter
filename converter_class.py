@@ -29,25 +29,25 @@ import pickle
 
 
 class CurrencyConverter(object):
-    '''
-    This class handles all the currency conversion related operations
+    '''This class handles all the currency conversion related operations
 
     Attributes:
-        _api_base_url (str): Description of `attr1`.
-        _base_currency (:obj:`int`, optional): Description of `attr2`
-        available_currencies
-        _symbols_map
-        _rates_file
-        actual_rates
-        available_currencies
+        available_currencies(:obj:`list` of :obj:`str`): List of currently
+            available currencies from fixer.io
+        actual_rates (dict): Dictionary of conversion rates
     '''
 
     def __init__(self,
                  symbols_file=r'txt/symbols.txt',
                  symbols_sep='\t',
                  rates_file='rates.pickle'):
-        '''
-        Constructor
+        '''CurrencyConverter's __init__ method
+
+        Args:
+            symbols_file (str): Description of `param1`.
+            symbols_sep (str): Description of `param2`. Multiple
+                lines are supported.
+            rates_file (str): Description of `param3`.
         '''
         self._api_base_url = 'https://api.fixer.io'
         self._base_currency = 'EUR'
@@ -67,9 +67,10 @@ class CurrencyConverter(object):
                 input_amount,
                 raw_input_currency,
                 raw_output_currency=None):
-        '''
-        converts the input amount into a structured output
-        output currency can be a single currency or all available currencies
+        '''Method for currency conversion
+        Converts the input amount into output currency. The result is a
+        dictionary.
+        TODO:
         '''
         conversion_result = {}
         input_dict = self._get_input_dict(input_amount,
