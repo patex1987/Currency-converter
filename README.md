@@ -72,6 +72,7 @@ python currency_converter.py --amount 100.0 --input_currency EUR --output_curren
     }
 }
 ```
+---
 
 ```
 python currency_converter.py --amount 100.0 --input_currency EUR
@@ -146,6 +147,7 @@ http://localhost:5000/currency_converter?amount=10&input_currency=EUR&output_cur
   }
 }
 ```
+---
 
 ```
 http://localhost:5000/currency_converter?amount=money&input_currency=EUR&output_currency=$
