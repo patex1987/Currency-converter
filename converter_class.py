@@ -2,6 +2,16 @@
 Created on 27. 11. 2017
 
 @author: patex1987
+
+This module contains code for the CurrencyConverter class
+- CurrencyConverter can be used to convert amounts of money between different
+currencies
+- Actual conversion rates are downloaded from fixer.io website
+- After downloading the actual rates, they are stored in a pickle file
+- This pickle can be used to convert amounts in offline (of course the
+actuality is questionable in offline mode)
+
+Google style documentation is used in 
 '''
 
 from collections import defaultdict
@@ -21,6 +31,15 @@ import pickle
 class CurrencyConverter(object):
     '''
     This class handles all the currency conversion related operations
+
+    Attributes:
+        _api_base_url (str): Description of `attr1`.
+        _base_currency (:obj:`int`, optional): Description of `attr2`
+        available_currencies
+        _symbols_map
+        _rates_file
+        actual_rates
+        available_currencies
     '''
 
     def __init__(self,
@@ -30,19 +49,19 @@ class CurrencyConverter(object):
         '''
         Constructor
         '''
-        self.api_base_url = 'https://api.fixer.io'
-        self.base_currency = 'EUR'
+        self._api_base_url = 'https://api.fixer.io'
+        self._base_currency = 'EUR'
         self.available_currencies = []
-        self.symbols_map = {}
-        self.rates_file = rates_file
+        self._symbols_map = {}
+        self._rates_file = rates_file
         try:
             # self.actual_rates = self._get_actual_rates()
-            self.actual_rates = self._check_rates_file(self.rates_file)
+            self.actual_rates = self._check_rates_file(self._rates_file)
             self.available_currencies = self._get_available_currencies()
         except requests.exceptions.ConnectionError:
             return
         if symbols_file is not None:
-            self.symbols_map = self._get_symbols_map(symbols_file, symbols_sep)
+            self._symbols_map = self._get_symbols_map(symbols_file, symbols_sep)
 
     def convert(self,
                 input_amount,
@@ -125,15 +144,15 @@ class CurrencyConverter(object):
         actual_rates = {}
         actual_rates['last_update'] = None
         actual_rates['rates'] = {}
-        act_currency = self.base_currency
+        act_currency = self._base_currency
         try:
             act_rates = self._get_rates_for_base(act_currency)
-            act_rates[self.base_currency] = 1.0
+            act_rates[self._base_currency] = 1.0
             actual_rates['rates'][act_currency] = act_rates
             act_timestamp = dt.datetime.now(tz=pytz.timezone('CET'))
             actual_rates['last_update'] = act_timestamp
-            if not os.path.isfile(self.rates_file):
-                with open(self.rates_file, 'wb') as handle:
+            if not os.path.isfile(self._rates_file):
+                with open(self._rates_file, 'wb') as handle:
                     pickle.dump(actual_rates,
                                 handle,
                                 protocol=pickle.HIGHEST_PROTOCOL)
@@ -152,7 +171,7 @@ class CurrencyConverter(object):
         '''
         if not self.actual_rates:
             return []
-        return list(self.actual_rates['rates'][self.base_currency].keys())
+        return list(self.actual_rates['rates'][self._base_currency].keys())
 
     def _get_symbols_map(self, file_name, separator):
         '''
@@ -202,7 +221,7 @@ class CurrencyConverter(object):
             next_update += dt.timedelta(days=1)
         if timestamp > next_update:
             self.actual_rates = self._get_actual_rates()
-            with open(self.rates_file, 'wb') as handle:
+            with open(self._rates_file, 'wb') as handle:
                 pickle.dump(self.actual_rates,
                             handle,
                             protocol=pickle.HIGHEST_PROTOCOL)
@@ -215,10 +234,10 @@ class CurrencyConverter(object):
         '''
         if input_currency == output_currency:
             return 1.0
-        if input_currency == self.base_currency:
-            base_currency = self.base_currency
+        if input_currency == self._base_currency:
+            base_currency = self._base_currency
             return self.actual_rates['rates'][base_currency][output_currency]
-        act_rates = self.actual_rates['rates'][self.base_currency]
+        act_rates = self.actual_rates['rates'][self._base_currency]
         input_val = decimal.Decimal(act_rates[input_currency])
         output_val = decimal.Decimal(act_rates[output_currency])
 
@@ -247,7 +266,7 @@ class CurrencyConverter(object):
         '''
         returns conversion rates for the provided base
         '''
-        currency_url = '{0}/{1}?base={2}'.format(self.api_base_url,
+        currency_url = '{0}/{1}?base={2}'.format(self._api_base_url,
                                                  'latest',
                                                  base_currency)
         fixer_response = requests.get(currency_url)
@@ -275,8 +294,8 @@ class CurrencyConverter(object):
             raise requests.exceptions.ConnectionError
         real_input_currency = raw_input_currency
         b_input_currency = bytes(raw_input_currency, encoding='utf-8')
-        if b_input_currency in self.symbols_map.keys():
-            input_currencies = self.symbols_map[b_input_currency]
+        if b_input_currency in self._symbols_map.keys():
+            input_currencies = self._symbols_map[b_input_currency]
             if len(input_currencies) != 1:
                 raise exceptions.TooManyCurrencies
             real_input_currency = input_currencies[0]
@@ -295,8 +314,8 @@ class CurrencyConverter(object):
                                  if currency != real_input_currency]
             return output_currencies
         b_output_currency = bytes(raw_output_currency, encoding='utf-8')
-        if b_output_currency in self.symbols_map.keys():
-            possible_currencies = self.symbols_map[b_output_currency]
+        if b_output_currency in self._symbols_map.keys():
+            possible_currencies = self._symbols_map[b_output_currency]
             output_currencies = list(set(self.available_currencies) &
                                      set(possible_currencies) -
                                      set([real_input_currency]))

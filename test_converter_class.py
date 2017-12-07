@@ -44,7 +44,7 @@ def test_base_rate(converter):
     assert 'last_update' in converter.actual_rates.keys()
     assert 'rates' in converter.actual_rates.keys()
     currency_codes = list(converter.actual_rates['rates'].keys())
-    assert currency_codes == [converter.base_currency]
+    assert currency_codes == [converter._base_currency]
 
 
 # def test_limit_reached(converter):
@@ -54,22 +54,22 @@ def test_base_rate(converter):
 #     '''
 #     with pytest.raises(currency_exceptions.FixerError):
 #         for _ in range(100):
-#             converter._get_rates_for_base(converter.base_currency)
+#             converter._get_rates_for_base(converter._base_currency)
 
 
 def test_symbols_presence(converter):
     '''
     Tests if symbols are added to the class
     '''
-    assert converter.symbols_map is not None
+    assert converter._symbols_map is not None
 
 
 def test_symbols_presence_wo_symbols(converter_without_symbols):
     '''
     Tests symbols in a converter without symbols
     '''
-    assert isinstance(converter_without_symbols.symbols_map, dict)
-    assert not list(converter_without_symbols.symbols_map.keys())
+    assert isinstance(converter_without_symbols._symbols_map, dict)
+    assert not list(converter_without_symbols._symbols_map.keys())
 
 
 def test_symbols_wrong_sep(converter):
@@ -84,7 +84,7 @@ def test_symbols_map_values(converter):
     '''
     Tests if all values in the symbols map dictionary is 3 letter long
     '''
-    symbol_values = list(converter.symbols_map.values())
+    symbol_values = list(converter._symbols_map.values())
     currencies = [currency for sublist in symbol_values
                   for currency in sublist]
     currency_length_check = (len(currency) == 3 for currency in currencies)
@@ -253,7 +253,7 @@ def test_single_conversion_rate_fixer_io(converter):
     Tests whether conversion rate calculation returns the same value as
     retrieved from fixer.io
     '''
-    input_currency = converter.base_currency
+    input_currency = converter._base_currency
     output_currency = random.choice([currency for currency
                                      in converter.available_currencies
                                      if currency != input_currency])
@@ -482,7 +482,7 @@ def test_base_in_available_currencies(converter):
     '''
     Tests if base currency is in the list of available_currencies
     '''
-    assert converter.base_currency in converter.available_currencies
+    assert converter._base_currency in converter.available_currencies
 
 
 def test_conversion_on_na_symbols(converter_with_na_symbols):
