@@ -167,11 +167,12 @@ class CurrencyConverter(object):
         Returns:
             str: 3-letter currency code
 
-        ConnectionError: If the currency conversion data from fixer.io can't be
-            retrieved (`self.available_currencies` list is empty)
-        exceptions.TooManyCurrencies: If the symbol represents more than one
-            currency
-        exceptions.CurrencyError: If an unknown currency is provided
+        Raises:
+            ConnectionError: If the currency conversion data from fixer.io
+                can't be retrieved (`self.available_currencies` list is empty)
+            exceptions.TooManyCurrencies: If the symbol represents more than
+                one currency
+            exceptions.CurrencyError: If an unknown currency is provided
         '''
         if not self.available_currencies:
             raise ConnectionError
@@ -187,9 +188,24 @@ class CurrencyConverter(object):
         raise exceptions.CurrencyError
 
     def _check_output_currency(self, real_input_currency, raw_output_currency):
-        '''
-        Checks whether the input currency is in correct format and if it
-        exists. Returns a list of currency outputs
+        '''Checks whether the raw output currency is in correct format
+
+        Checks whether the `raw_output_currency` is an existing symbol,
+        3-letter code or None. At the end returns a list of 3-letter output
+        currencies.
+
+        Args:
+            real_input_currency (str): 3-letter input currency (output of
+                _check_input_currency)
+            raw_output_currency (str): string representing the output currency
+                to be checked by this method
+
+        Returns:
+            (:obj:`list` of :obj:`str`): list of 3-letter currency codes. The
+                amount value will be converted to all of these currencies
+
+        Raises:
+            exceptions.CurrencyError: If an unknown currency is provided
         '''
         if raw_output_currency is None:
             output_currencies = [currency for currency
