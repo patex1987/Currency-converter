@@ -21,12 +21,12 @@ import io
 import decimal
 import json
 import numbers
+import os
+import pickle
 import requests
 from requests.exceptions import ConnectionError
 import currency_exceptions as exceptions
 import pytz
-import os
-import pickle
 
 
 class CurrencyConverter(object):
@@ -56,10 +56,9 @@ class CurrencyConverter(object):
         self._symbols_map = {}
         self._rates_file = rates_file
         try:
-            # self.actual_rates = self._get_actual_rates()
             self.actual_rates = self._check_rates_file(self._rates_file)
             self.available_currencies = self._get_available_currencies()
-        except requests.exceptions.ConnectionError:
+        except ConnectionError:
             return
         if symbols_file is not None:
             self._symbols_map = self._get_symbols_map(symbols_file, symbols_sep)
@@ -148,20 +147,80 @@ class CurrencyConverter(object):
         Args:
             conversion_dict (dict): output of the `convert` method. A
                 dictionary representing the conversion results
-        Returns:
-            str: json formatted string of the `conversion_dict`
 
+        Returns:
+            str: 3-letter currency code
         '''
         pretty_output = json.dumps(conversion_dict, indent=4, sort_keys=True)
         return pretty_output
+
+    def _check_input_currency(self, raw_input_currency):
+        '''Checks whether the input currency is in correct format
+
+        Checks whether the `raw_input_currency` is a symbol or 3-letter code.
+        At the end returns 3-letter currency code.
+
+        Args:
+            raw_input_currency (str): string representing the input currency to
+                be checked by this method
+
+        Returns:
+            str: 3-letter currency code
+
+        ConnectionError: If the currency conversion data from fixer.io can't be
+            retrieved (`self.available_currencies` list is empty)
+        exceptions.TooManyCurrencies: If the symbol represents more than one
+            currency
+        exceptions.CurrencyError: If an unknown currency is provided
+        '''
+        if not self.available_currencies:
+            raise ConnectionError
+        real_input_currency = raw_input_currency
+        b_input_currency = bytes(raw_input_currency, encoding='utf-8')
+        if b_input_currency in self._symbols_map.keys():
+            input_currencies = self._symbols_map[b_input_currency]
+            if len(input_currencies) != 1:
+                raise exceptions.TooManyCurrencies
+            real_input_currency = input_currencies[0]
+        if real_input_currency in self.available_currencies:
+            return real_input_currency
+        raise exceptions.CurrencyError
+
+    def _check_output_currency(self, real_input_currency, raw_output_currency):
+        '''
+        Checks whether the input currency is in correct format and if it
+        exists. Returns a list of currency outputs
+        '''
+        if raw_output_currency is None:
+            output_currencies = [currency for currency
+                                 in self.available_currencies
+                                 if currency != real_input_currency]
+            return output_currencies
+        b_output_currency = bytes(raw_output_currency, encoding='utf-8')
+        if b_output_currency in self._symbols_map.keys():
+            possible_currencies = self._symbols_map[b_output_currency]
+            output_currencies = list(set(self.available_currencies) &
+                                     set(possible_currencies) -
+                                     set([real_input_currency]))
+            return output_currencies
+        if raw_output_currency in self.available_currencies:
+            output_currencies = [raw_output_currency]
+            return output_currencies
+        raise exceptions.CurrencyError
+
+    def _check_input_amount(self, input_amount):
+        '''
+        Checks whether the conversion parameters are in correct format
+        '''
+        if not isinstance(input_amount, numbers.Number):
+            raise exceptions.ConversionError
 
     def _convert_single_currency(self,
                                  input_amount,
                                  input_currency,
                                  output_currency):
-        '''
-        Converts the provided input amount of money into the desired output
-        amount
+        '''Converts `input_amount` into the `output_currency`
+
         '''
         actual_conversion_rate = self._calculate_current_rate(input_currency,
                                                               output_currency)
@@ -326,51 +385,3 @@ class CurrencyConverter(object):
         input_dict['amount'] = amount
         input_dict['currency'] = currency
         return input_dict
-
-    def _check_input_currency(self, raw_input_currency):
-        '''
-        Checks whether the input currency is in correct format and if its
-        contained in the available currencies or symbols. Returns 3 letter
-        currency codes (Converts symbol to currency)
-        '''
-        if not self.available_currencies:
-            raise requests.exceptions.ConnectionError
-        real_input_currency = raw_input_currency
-        b_input_currency = bytes(raw_input_currency, encoding='utf-8')
-        if b_input_currency in self._symbols_map.keys():
-            input_currencies = self._symbols_map[b_input_currency]
-            if len(input_currencies) != 1:
-                raise exceptions.TooManyCurrencies
-            real_input_currency = input_currencies[0]
-        if real_input_currency in self.available_currencies:
-            return real_input_currency
-        raise exceptions.CurrencyError
-
-    def _check_output_currency(self, real_input_currency, raw_output_currency):
-        '''
-        Checks whether the input currency is in correct format and if it
-        exists. Returns a list of currency outputs
-        '''
-        if raw_output_currency is None:
-            output_currencies = [currency for currency
-                                 in self.available_currencies
-                                 if currency != real_input_currency]
-            return output_currencies
-        b_output_currency = bytes(raw_output_currency, encoding='utf-8')
-        if b_output_currency in self._symbols_map.keys():
-            possible_currencies = self._symbols_map[b_output_currency]
-            output_currencies = list(set(self.available_currencies) &
-                                     set(possible_currencies) -
-                                     set([real_input_currency]))
-            return output_currencies
-        if raw_output_currency in self.available_currencies:
-            output_currencies = [raw_output_currency]
-            return output_currencies
-        raise exceptions.CurrencyError
-
-    def _check_input_amount(self, input_amount):
-        '''
-        Checks whether the conversion parameters are in correct format
-        '''
-        if not isinstance(input_amount, numbers.Number):
-            raise exceptions.ConversionError
