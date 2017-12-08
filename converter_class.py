@@ -70,7 +70,42 @@ class CurrencyConverter(object):
         '''Method for currency conversion
         Converts the input amount into output currency. The result is a
         dictionary.
-        TODO:
+
+        Args:
+            input_amount (:obj: `number.Number`): Amount to convert - any
+                number type can be used, but try to use mainly floats or
+                integers
+            raw_input_currency (str): The input currency. Either a 3-letter
+                currency code or a currency symbol
+            raw_output_currency(:obj: `str`, optional): The output currency.
+                Defaults to None. In case of None, the amount is converted to
+                every available currency (self.available_currencies)
+
+        Returns:
+            dict: dictionary represenstation of the response
+
+                {
+                    "input": {
+                        "amount": amount to be converted
+                        "currency": input currency
+                    },
+                    "output": {
+                        currency_code: output_amount
+                    }
+                }
+
+            Note: if a conversion results in an error, the output node of the
+            dictionary will contain the error message. Possible errors:
+            1. ConnectionError - the conversion rates can't be downloaded,
+            2. Unknown currency - a not known currency is provided
+            3. Amount is not a number
+            4. The input currency symbol represent more than one currency
+
+            Other than that if you provide a symbol representing more than one
+            currency as output currency, than the amount is converted to all
+            currencies represented by that symbol. (E.g. $ can represent USD,
+            AUD, NZD, etc.)
+
         '''
         conversion_result = {}
         input_dict = self._get_input_dict(input_amount,
