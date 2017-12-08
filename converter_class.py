@@ -11,7 +11,8 @@ currencies
 - This pickle can be used to convert amounts in offline (of course the
 actuality is questionable in offline mode)
 
-Google style documentation is used in 
+Google style documentation is used in this file. See guideline here:
+http://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html
 '''
 
 from collections import defaultdict
@@ -142,8 +143,14 @@ class CurrencyConverter(object):
         return conversion_result
 
     def stringify_output(self, conversion_dict):
-        '''
-        Returns conversion output in a pretty string format
+        '''Dumps the output of `convert` into json
+
+        Args:
+            conversion_dict (dict): output of the `convert` method. A
+                dictionary representing the conversion results
+        Returns:
+            str: json formatted string of the `conversion_dict`
+
         '''
         pretty_output = json.dumps(conversion_dict, indent=4, sort_keys=True)
         return pretty_output
