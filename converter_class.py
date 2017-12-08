@@ -72,7 +72,7 @@ class CurrencyConverter(object):
         dictionary.
 
         Args:
-            input_amount (:obj: `number.Number`): Amount to convert - any
+            input_amount (:obj: `numbers.Number`): Amount to convert - any
                 number type can be used, but try to use mainly floats or
                 integers
             raw_input_currency (str): The input currency. Either a 3-letter
@@ -155,7 +155,7 @@ class CurrencyConverter(object):
         return pretty_output
 
     def _check_input_currency(self, raw_input_currency):
-        '''Checks whether the input currency is in correct format
+        '''Checks whether the `raw_input_currency` is in correct format
 
         Checks whether the `raw_input_currency` is a symbol or 3-letter code.
         At the end returns 3-letter currency code.
@@ -188,7 +188,7 @@ class CurrencyConverter(object):
         raise exceptions.CurrencyError
 
     def _check_output_currency(self, real_input_currency, raw_output_currency):
-        '''Checks whether the raw output currency is in correct format
+        '''Checks whether the `raw_output_currency` is in correct format
 
         Checks whether the `raw_output_currency` is an existing symbol,
         3-letter code or None. At the end returns a list of 3-letter output
@@ -225,8 +225,17 @@ class CurrencyConverter(object):
         raise exceptions.CurrencyError
 
     def _check_input_amount(self, input_amount):
-        '''
-        Checks whether the conversion parameters are in correct format
+        '''Checks whether the `input_amount` is a numeric value
+
+        Args:
+            input_amount (:obj:`numbers.Number`): The amount to be converted
+
+        Returns:
+            None
+
+        Raises:
+            exceptions.ConversionError: If the provided `input_amount` is not a
+                numeric value
         '''
         if not isinstance(input_amount, numbers.Number):
             raise exceptions.ConversionError
