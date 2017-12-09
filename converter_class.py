@@ -82,7 +82,7 @@ class CurrencyConverter(object):
                 every available currency (self.available_currencies)
 
         Returns:
-            dict: dictionary represenstation of the response
+            dict: dictionary representation of the response
 
                 {
                     "input": {
@@ -300,8 +300,20 @@ class CurrencyConverter(object):
                                  input_amount,
                                  input_currency,
                                  output_currency):
-        '''Converts `input_amount` into the `output_currency`
+        '''Calculates the output amount for a single comversion
 
+        Single conversion - between one input and output currency
+        First it calculates the conversion rate -> then calculates the output
+        amount based on that
+
+        Args:
+            input_amount (:obj:`numbers.Number`): The amount to be converted
+            input_currency (str): 3-letter input currency code
+            output_currency (:obj:`list` of :obj:`str`): 3-letter currency code
+                representing the output
+
+        Returns:
+            float: the calculated output amont
         '''
         actual_conversion_rate = self._calculate_current_rate(input_currency,
                                                               output_currency)
