@@ -1,4 +1,10 @@
-import currency_exceptions
+'''
+Created on 04. 12. 2017
+
+@author: patex1987
+
+contains code for handling data from flask requests
+'''
 from converter_class import CurrencyConverter
 
 from flask import jsonify
