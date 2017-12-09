@@ -359,6 +359,45 @@ class CurrencyConverter(object):
             return []
         return list(self.actual_rates['rates'][self._base_currency].keys())
 
+    def _get_symbols_map(self, file_name, separator):
+        '''gets the dictionary for mapping symbols to 3-letter currencies
+        
+        The symbols file maps currency symbols to their 3-letter currency
+        codes. Checks whther the file exists. Opens the file in utf-8
+        encoding. Returns a dictionary, which maps symbols to their
+        currencies
+        
+        Args:
+            file_name (str): path for symbols mapping
+            separator (str): separator used in the symbols mapping file
+        
+        Returns:
+            (dict of str: str): dictionary, that maps symbols to their
+            3-letter currency codes. Note: one symbol can represent more than
+            one currency
+        
+        Raises:
+            exceptions.SymbolImportError: if the number of columns in a row
+            doesn't equal to 2, or the length of the second column doesn't
+            equal to 3 (those should be the 3-letter currency codes)
+        '''
+        if not os.path.isfile(file_name):
+            return {}
+        symbol_map = defaultdict(list)
+        with io.open(file_name, 'r', encoding='utf-8') as input_file:
+            for line in input_file:
+                data = line.strip().split(separator)
+                if len(data) != 2:
+                    raise exceptions.SymbolImportError
+                symbol_encoded = bytes(data[0], encoding='utf-8')
+                if len(data[1]) != 3:
+                    raise exceptions.SymbolImportError
+                if data[1] not in self.available_currencies:
+                    continue
+                currency = data[1]
+                symbol_map[symbol_encoded].append(currency)
+        return symbol_map
+
     def _get_actual_rates(self):
         '''
         Retrieves the actual currency conversion rates from fixer.io
@@ -385,27 +424,6 @@ class CurrencyConverter(object):
             return actual_rates
         if actual_rates['last_update'] is None:
             return self.actual_rates
-
-    def _get_symbols_map(self, file_name, separator):
-        '''
-        gets currency symbols mapping
-        '''
-        if not os.path.isfile(file_name):
-            return {}
-        symbol_map = defaultdict(list)
-        with io.open(file_name, 'r', encoding='utf-8') as input_file:
-            for line in input_file:
-                data = line.strip().split(separator)
-                if len(data) != 2:
-                    raise exceptions.SymbolImportError
-                symbol_encoded = bytes(data[0], encoding='utf-8')
-                if len(data[1]) != 3:
-                    raise exceptions.SymbolImportError
-                if data[1] not in self.available_currencies:
-                    continue
-                currency = data[1]
-                symbol_map[symbol_encoded].append(currency)
-        return symbol_map
 
     def _calculate_current_rate(self, input_currency, output_currency):
         '''
