@@ -240,6 +240,34 @@ class CurrencyConverter(object):
         if not isinstance(input_amount, numbers.Number):
             raise exceptions.ConversionError
 
+    def _check_rates_actuality(self, timestamp):
+        '''Checks whether the `actual_rates` dictionary holds the newest currency
+        rates available from fixer.io
+
+        Fixer.io is updated every day at 4PM CET. This function checks if
+        during the time of conversion newer rates are available from fixer.io
+        If yes updates `self.actual_rates` and pickles the new rates
+
+        Args:
+            timestamp (:obj:`datetime.datetime`): timestamp of conversion
+                (against which the last update of rates is compared)
+
+        Returns:
+            None
+
+        '''
+        last_update = self.actual_rates['last_update']
+        next_update = last_update.replace(hour=16, minute=10)
+        if last_update > next_update:
+            next_update += dt.timedelta(days=1)
+        if timestamp > next_update:
+            self.actual_rates = self._get_actual_rates()
+            with open(self._rates_file, 'wb') as handle:
+                pickle.dump(self.actual_rates,
+                            handle,
+                            protocol=pickle.HIGHEST_PROTOCOL)
+            self.available_currencies = self._get_available_currencies()
+
     def _convert_single_currency(self,
                                  input_amount,
                                  input_currency,
@@ -336,23 +364,6 @@ class CurrencyConverter(object):
                                                           currency)
             output_conversions[currency] = output_amount
         return output_conversions
-
-    def _check_rates_actuality(self, timestamp):
-        '''
-        Check whether the actual_rates dictionary holds the newest currency
-        rates
-        '''
-        last_update = self.actual_rates['last_update']
-        next_update = last_update.replace(hour=16, minute=10)
-        if last_update > next_update:
-            next_update += dt.timedelta(days=1)
-        if timestamp > next_update:
-            self.actual_rates = self._get_actual_rates()
-            with open(self._rates_file, 'wb') as handle:
-                pickle.dump(self.actual_rates,
-                            handle,
-                            protocol=pickle.HIGHEST_PROTOCOL)
-            self.available_currencies = self._get_available_currencies()
 
     def _calculate_current_rate(self, input_currency, output_currency):
         '''
