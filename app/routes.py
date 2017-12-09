@@ -1,22 +1,25 @@
+'''
+Created on 04. 12. 2017
+
+@author: patex1987
+
+Flask routes
+'''
 from app import app
 from app.data_handling import handle_raw_data
 from flask import request
 from flask import abort
 from flask import make_response
 from flask import jsonify
-import json
-
-@app.route('/')
-@app.route('/index')
-def index():
-    return "Hello, World!"
 
 @app.route('/currency_converter', methods=['GET'])
-def get_tasks():
+def get_conversion():
+    '''handles the conversion requests
+    '''
     arguments = request.args
     if len(arguments) not in (2, 3):
         abort(400)
-    
+
     try:
         raw_amount = request.args.get('amount')
         raw_input_currency = request.args.get('input_currency')
@@ -30,6 +33,8 @@ def get_tasks():
 
 @app.errorhandler(400)
 def not_found(error):
+    '''error 400 handling
+    '''
     error_dict = {'error': 'Wrong parameters'}
     error_output = jsonify(error_dict)
     return make_response(error_output, 400)
