@@ -399,8 +399,15 @@ class CurrencyConverter(object):
         return symbol_map
 
     def _get_actual_rates(self):
-        '''
-        Retrieves the actual currency conversion rates from fixer.io
+        '''Retrieves the actual currency conversion rates from fixer.io
+
+        Connects to fixer.io and retrieves the actual conversion rates for the
+        `base_currency`. Normally EUR is used as base currency. Saves the
+        conversion rates into a pickle, if the file doesn't exist.
+
+        Returns:
+            dict: dictionary of currencies and their conversion rates against
+            the `self.base_currency`. Information about the last update as well
         '''
         actual_rates = {}
         actual_rates['last_update'] = None
