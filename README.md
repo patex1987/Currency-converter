@@ -14,6 +14,12 @@ Both of these apps are using the `CurrencyConverter` class from `converter_class
 - The application has been developed using the TDD methodology
 
 
+## Code
+
+For more information about how the code works, check the docstrings in the code.
+
+All the code has been revised with pylint
+
 ## Testing
 
 To run the tests use py.test
