@@ -322,9 +322,21 @@ class CurrencyConverter(object):
         return output_amount
 
     def _check_rates_file(self, file_path):
-        '''
-        checks, whether a pickle file with the rates exist. If yes loads the
-        conversion rates from the pickle
+        '''Returns conversions rates (either from pickle or fixer.io)
+        
+        - Checks if a pickle file under `file_path` exists (the pickle file is
+        an image of the last accessed conversion rates)
+        - If the pickle doesnt exist returns `self._get_actual_rates`, 
+        conversion rates downloaded from fixer.io
+
+        Args:
+            file_path (str): path of the pickle file
+
+        Returns:
+            dict: Dictionary of the conversion rates
+            
+            Either downloaded from fixer.io (the most actual rates) or from
+            the pickle file (not always the most actual conversion rates)
         '''
         if not os.path.isfile(file_path):
             return self._get_actual_rates()
