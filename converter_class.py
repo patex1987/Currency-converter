@@ -444,7 +444,7 @@ class CurrencyConverter(object):
             conversionr rates against the `base_currency`
 
         Raises:
-            exceptions.FixerError: If the connection limits on fixxer.io are
+            exceptions.FixerError: If the connection limits on fixer.io are
             exceeded
         '''
         currency_url = '{0}/{1}?base={2}'.format(self._api_base_url,
@@ -457,9 +457,15 @@ class CurrencyConverter(object):
         return current_rates
 
     def _calculate_current_rate(self, input_currency, output_currency):
-        '''
-        calculates the currency conversion rate needed to convert from input to
-        output conversion. EUR is the basis currency
+        '''calculates the conversion rate to convert from `input_currency` to
+        `output_currency`
+
+        Args:
+            input_currency (str): 3-letter input currency code
+            output_currency (str): 3-letter output currency code
+
+        Returns:
+            float: rounded output amount
         '''
         if input_currency == output_currency:
             return 1.0
