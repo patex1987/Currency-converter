@@ -20,9 +20,9 @@ import datetime as dt
 import io
 import decimal
 import json
-import numbers
 import os
 import pickle
+import numbers
 import requests
 from requests.exceptions import ConnectionError
 import currency_exceptions as exceptions
@@ -323,10 +323,10 @@ class CurrencyConverter(object):
 
     def _check_rates_file(self, file_path):
         '''Returns conversions rates (either from pickle or fixer.io)
-        
+
         - Checks if a pickle file under `file_path` exists (the pickle file is
         an image of the last accessed conversion rates)
-        - If the pickle doesnt exist returns `self._get_actual_rates`, 
+        - If the pickle doesnt exist returns `self._get_actual_rates`,
         conversion rates downloaded from fixer.io
 
         Args:
@@ -334,7 +334,7 @@ class CurrencyConverter(object):
 
         Returns:
             dict: Dictionary of the conversion rates
-            
+
             Either downloaded from fixer.io (the most actual rates) or from
             the pickle file (not always the most actual conversion rates)
         '''
@@ -351,7 +351,7 @@ class CurrencyConverter(object):
         Returns:
             (:obj:`list` of :obj:`str`): List of 3-letter currency codes - all
                 currencies available on fixer.io
-            
+
             Either an empty list, if `self.actual_rates` is empty, otherwise a
             list of keys in `self.actual_rates`
         '''
@@ -361,21 +361,21 @@ class CurrencyConverter(object):
 
     def _get_symbols_map(self, file_name, separator):
         '''gets the dictionary for mapping symbols to 3-letter currencies
-        
+
         The symbols file maps currency symbols to their 3-letter currency
         codes. Checks whther the file exists. Opens the file in utf-8
         encoding. Returns a dictionary, which maps symbols to their
         currencies
-        
+
         Args:
             file_name (str): path for symbols mapping
             separator (str): separator used in the symbols mapping file
-        
+
         Returns:
             (dict of str: str): dictionary, that maps symbols to their
             3-letter currency codes. Note: one symbol can represent more than
             one currency
-        
+
         Raises:
             exceptions.SymbolImportError: if the number of columns in a row
             doesn't equal to 2, or the length of the second column doesn't
