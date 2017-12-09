@@ -254,7 +254,6 @@ class CurrencyConverter(object):
 
         Returns:
             None
-
         '''
         last_update = self.actual_rates['last_update']
         next_update = last_update.replace(hour=16, minute=10)
@@ -267,6 +266,35 @@ class CurrencyConverter(object):
                             handle,
                             protocol=pickle.HIGHEST_PROTOCOL)
             self.available_currencies = self._get_available_currencies()
+
+    def _get_all_conversions(self,
+                             input_amount,
+                             input_currency,
+                             output_currencies):
+        '''converts `input_amount` into all currencies in the `output_currencies`
+        list
+
+        Loops through every currency in `output_currencies` - and converts the
+        amount into each currency. The result is returned as a dictionary
+
+        Args:
+            input_amount (:obj:`numbers.Number`): The amount to be converted
+            input_currency (str): 3-letter input currency code
+            output_currencies (:obj:`list` of :obj:`str`): list of 3-letter
+                currency codes. The `input_amount` value will be converted to
+                all of these currencies
+
+        Returns:
+            (dict of str: int): Maps the 3-letter currency codes to their
+                corresponding amounts
+        '''
+        output_conversions = {}
+        for currency in output_currencies:
+            output_amount = self._convert_single_currency(input_amount,
+                                                          input_currency,
+                                                          currency)
+            output_conversions[currency] = output_amount
+        return output_conversions
 
     def _convert_single_currency(self,
                                  input_amount,
@@ -348,22 +376,6 @@ class CurrencyConverter(object):
                 currency = data[1]
                 symbol_map[symbol_encoded].append(currency)
         return symbol_map
-
-    def _get_all_conversions(self,
-                             input_amount,
-                             input_currency,
-                             output_currencies):
-        '''
-        converts the input amount into all currencies in the output currencies
-        list
-        '''
-        output_conversions = {}
-        for currency in output_currencies:
-            output_amount = self._convert_single_currency(input_amount,
-                                                          input_currency,
-                                                          currency)
-            output_conversions[currency] = output_amount
-        return output_conversions
 
     def _calculate_current_rate(self, input_currency, output_currency):
         '''
