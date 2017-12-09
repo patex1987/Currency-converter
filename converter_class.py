@@ -399,15 +399,16 @@ class CurrencyConverter(object):
         return symbol_map
 
     def _get_actual_rates(self):
-        '''Retrieves the actual currency conversion rates from fixer.io
+        '''Retrieves the actual currency conversion rates
 
-        Connects to fixer.io and retrieves the actual conversion rates for the
-        `base_currency`. Normally EUR is used as base currency. Saves the
-        conversion rates into a pickle, if the file doesn't exist.
+        Retrieves the actual rates and packs it into a dictionary with
+        additional info base_currency`. Normally EUR is used as base currency.
+        Saves the conversion rates into a pickle, if the file doesn't exist.
 
         Returns:
             dict: dictionary of currencies and their conversion rates against
-            the `self.base_currency`. Information about the last update as well
+            the `self.base_currency`. additional info about the retrieval
+            time.
         '''
         actual_rates = {}
         actual_rates['last_update'] = None
@@ -431,6 +432,29 @@ class CurrencyConverter(object):
             return actual_rates
         if actual_rates['last_update'] is None:
             return self.actual_rates
+
+    def _get_rates_for_base(self, base_currency):
+        '''Gets the conversion rates for the base currency from fixer.io
+
+        Args:
+            base_currency(str): 3-letter currency code of the base_currency
+
+        Returns:
+            (dict of `str`: `float`): Dictionary, mapping currencies to their
+            conversionr rates against the `base_currency`
+
+        Raises:
+            exceptions.FixerError: If the connection limits on fixxer.io are
+            exceeded
+        '''
+        currency_url = '{0}/{1}?base={2}'.format(self._api_base_url,
+                                                 'latest',
+                                                 base_currency)
+        fixer_response = requests.get(currency_url)
+        if fixer_response.headers['content-type'] == 'text/html':
+            raise exceptions.FixerError
+        current_rates = fixer_response.json()['rates']
+        return current_rates
 
     def _calculate_current_rate(self, input_currency, output_currency):
         '''
@@ -466,19 +490,6 @@ class CurrencyConverter(object):
         rounded_output = decimal.Decimal(output_amount.quantize(precision,
                                                                 rounding=rounding))
         return float(rounded_output)
-
-    def _get_rates_for_base(self, base_currency):
-        '''
-        returns conversion rates for the provided base
-        '''
-        currency_url = '{0}/{1}?base={2}'.format(self._api_base_url,
-                                                 'latest',
-                                                 base_currency)
-        fixer_response = requests.get(currency_url)
-        if fixer_response.headers['content-type'] == 'text/html':
-            raise exceptions.FixerError
-        current_rates = fixer_response.json()['rates']
-        return current_rates
 
     def _get_input_dict(self, amount, currency):
         '''
