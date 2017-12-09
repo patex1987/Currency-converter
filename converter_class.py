@@ -485,8 +485,16 @@ class CurrencyConverter(object):
         return float(rounded_rate)
 
     def _calculate_output_amount(self, input_amount, conversion_rate):
-        '''
-        Returns the output amount
+        '''Calculates the output amount based on the `conversion_rate` and
+        `input_currency`
+
+        Args:
+            input_amount(:obj: `numbers.Number`): input amount to be
+                converted, number like object
+            conversion_rate(float): conversion rate
+
+        Returns:
+            float: converted output amount
         '''
         dec_input = decimal.Decimal(input_amount)
         dec_conversion = decimal.Decimal(conversion_rate)
@@ -498,8 +506,14 @@ class CurrencyConverter(object):
         return float(rounded_output)
 
     def _get_input_dict(self, amount, currency):
-        '''
-        converts amount and currency into a dictionary
+        '''returns the input node of `convert`s dictionary
+
+        Args:
+            amount (:obj:): input amount
+            currency (:obj:): input currency
+
+        Returns:
+            dict: amount and input currency as dictionary
         '''
         input_dict = {}
         input_dict['amount'] = amount
