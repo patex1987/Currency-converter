@@ -344,6 +344,21 @@ class CurrencyConverter(object):
             actual_rates = pickle.load(handle)
             return actual_rates
 
+    def _get_available_currencies(self):
+        '''returns a list of available currencies based on
+        `self.actual_rates` dictionary
+
+        Returns:
+            (:obj:`list` of :obj:`str`): List of 3-letter currency codes - all
+                currencies available on fixer.io
+            
+            Either an empty list, if `self.actual_rates` is empty, otherwise a
+            list of keys in `self.actual_rates`
+        '''
+        if not self.actual_rates:
+            return []
+        return list(self.actual_rates['rates'][self._base_currency].keys())
+
     def _get_actual_rates(self):
         '''
         Retrieves the actual currency conversion rates from fixer.io
@@ -370,15 +385,6 @@ class CurrencyConverter(object):
             return actual_rates
         if actual_rates['last_update'] is None:
             return self.actual_rates
-
-    def _get_available_currencies(self):
-        '''
-        gets a list of available currencies based on the actual_rates
-        dictionary
-        '''
-        if not self.actual_rates:
-            return []
-        return list(self.actual_rates['rates'][self._base_currency].keys())
 
     def _get_symbols_map(self, file_name, separator):
         '''
