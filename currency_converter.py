@@ -12,7 +12,11 @@ from converter_class import CurrencyConverter
 
 
 def main(arguments):
-    '''
+    '''Parses the command line parameters and returns json string
+    representation of the conversion result
+
+    Args:
+        arguments: command line arguments returned by `get_parser`
     '''
     converter = CurrencyConverter()
     conv_result = converter.convert(arguments.raw_input_amount,
@@ -23,8 +27,7 @@ def main(arguments):
 
 
 def get_parser():
-    '''
-    Gets the command line parser
+    '''Gets the command line argument parser
     '''
     parser = argparse.ArgumentParser(description="Currency converter CLI")
     parser.add_argument("--amount",
@@ -36,13 +39,13 @@ def get_parser():
                         required=True,
                         dest='raw_input_currency',
                         help='Input currency. 2 options: 3-letter currency ' +
-                             'code; currency symbol')
+                        'code; currency symbol')
     parser.add_argument('--output_currency',
                         default=None,
                         dest='raw_output_currency',
                         help='Output currency. 2 options: 3-letter currency ' +
-                             'code; currency_symbol. Optional parameter, if ' +
-                             'omitted, all available currencies will be used')
+                        'code; currency_symbol. Optional parameter, if ' +
+                        'omitted, all available currencies will be used')
     return parser
 
 
