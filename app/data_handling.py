@@ -7,8 +7,20 @@ from flask import jsonify
 def handle_raw_data(raw_amount,
                     raw_input_currency,
                     raw_output_currency):
-    '''
-    handles flask requests
+    '''handles conversion from flask requests
+
+    Checks if the `raw_amount` can be converted to float, then sends the
+    parameters into CurrencyConverter's convert method. Returns jsonified
+    dictionary
+
+    Args:
+        raw_amount (str):
+        raw_input_currency (str):
+        raw_output_currency (str):
+
+    Returns:
+        str: jsonified output from `CurrencyConverter.convert`
+
     '''
 
     try:
