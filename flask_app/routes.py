@@ -5,8 +5,8 @@ Created on 04. 12. 2017
 
 Flask routes
 '''
-from app import app
-from app.data_handling import handle_raw_data
+from flask_app import app
+from flask_app.data_handling import handle_raw_data
 from flask import request
 from flask import abort
 from flask import make_response
