@@ -12,11 +12,13 @@ Both of these apps are using the `CurrencyConverter` class from `converter_class
 
 - It uses [fixer.io](http://fixer.io/) in the background to retrieve the actual conversion rates.
 - The application has been developed using the TDD methodology
+- Conversion rates are backed up in a pickle file, so the program can work without internet connection (but the conversion rates can be obsolete)
+- The program checks if newer conversion rates are available from fixer.io, if yes downloads them and stores into pickle.
 
 
 ## Code
 
-For more information about how the code works, check the docstrings in the code.
+For more information about how the code works, check the docstrings in the code (mainly `converter_class.py`).
 
 All the code has been revised with pylint
 
@@ -24,11 +26,18 @@ All the code has been revised with pylint
 
 To run the tests use py.test
 
+There are two tests:
+
+- `test_converter_class.py` tests for `converter_class.py`
+- `test_site.py` tests for the flask app
+
+Example output:
+
+Try to run the following code:
+
 ```python
 pytest test_converter_class.py
 ```
-
-Example output:
 
 ![](img/testing.PNG)
 
