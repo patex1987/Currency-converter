@@ -9,7 +9,6 @@ import pytest
 from converter_class import CurrencyConverter
 import currency_exceptions
 import requests
-import mock
 from pytest_mock import mocker
 
 

@@ -441,7 +441,7 @@ class CurrencyConverter(object):
 
         Returns:
             (dict of `str`: `float`): Dictionary, mapping currencies to their
-            conversionr rates against the `base_currency`
+            conversion rates against the `base_currency`
 
         Raises:
             exceptions.FixerError: If the connection limits on fixer.io are

@@ -9,6 +9,7 @@ import json
 import pytest
 from flask_app import app
 
+
 @pytest.fixture
 def client(request):
     test_client = app.test_client()
@@ -17,13 +18,15 @@ def client(request):
 
 
 def json_of_response(response):
-    '''json decoding
+    '''
+    json decoding
     '''
     return json.loads(response.data.decode('utf8'))
 
 
 def test_basic_converter_response(client):
-    '''tests if `/currency_converter` returns error 400
+    '''
+    tests if `/currency_converter` returns error 400
     '''
     response = client.get('/currency_converter')
     response_json = json_of_response(response)
@@ -32,7 +35,8 @@ def test_basic_converter_response(client):
 
 
 def test_converter_too_much_parameters(client):
-    '''tests the response if an incorrect number of arguments is int he
+    '''
+    tests the response if an incorrect number of arguments is in the
     request
     '''
     response = client.get('/currency_converter?amount=100')
@@ -42,7 +46,8 @@ def test_converter_too_much_parameters(client):
 
 
 def test_converter_text_amount(client):
-    '''tests the response if a text is provided as amount
+    '''
+    tests the response if a text is provided as amount
     '''
     base_uri = '/currency_converter?amount={0}&input_currency={1}' + \
                '&output_currency={2}'
@@ -54,7 +59,8 @@ def test_converter_text_amount(client):
 
 
 def test_converter_unknown_currency(client):
-    '''tests the response if an unknown currency is provided
+    '''
+    tests the response if an unknown currency is provided
     '''
     base_uri = '/currency_converter?amount={0}&input_currency={1}' + \
                '&output_currency={2}'
@@ -66,7 +72,8 @@ def test_converter_unknown_currency(client):
 
 
 def test_converter_toomuch_input_currency(client):
-    '''tests the response if a symbol with more than one currencies is
+    '''
+    tests the response if a symbol with more than one currencies is
     provided as input currency
     '''
     base_uri = '/currency_converter?amount={0}&input_currency={1}' + \
