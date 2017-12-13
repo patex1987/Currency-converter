@@ -486,7 +486,7 @@ class CurrencyConverter(object):
 
     def _calculate_output_amount(self, input_amount, conversion_rate):
         '''Calculates the output amount based on the `conversion_rate` and
-        `input_currency`
+        `input_amount`
 
         Args:
             input_amount(:obj: `numbers.Number`): input amount to be
